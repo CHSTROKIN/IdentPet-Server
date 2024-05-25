@@ -31,3 +31,9 @@ class Model(nn.Module):
         features = self.model(images)
         embedding = self.embedding(features)
         return embedding
+
+def create_model():
+    model = Model(CONFIG["model_name"], CONFIG["embedding_size"])
+    weights = torch.load("weight.pkt", map_location=torch.device(CONFIG["device"]))
+    del weights["fc.weight"]
+    model.load_state_dict(weights)
