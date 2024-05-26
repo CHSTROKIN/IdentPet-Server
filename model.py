@@ -64,6 +64,8 @@ def fetch_image(image_name):
     
     return img
 
+default_model = create_model()
+
 @torch.inference_mode()
 def embed_image(model, image, device):
     model.eval()
