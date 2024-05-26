@@ -18,7 +18,7 @@ CONFIG = {
     "model_name": "tf_efficientnet_b0_ns",
     "embedding_size": 512,
     "device": torch.device("cuda:0" if torch.cuda.is_available() else "cpu"),
-    "bucket_name": "petfinder-424117",
+    "bucket_name": "petfinder-424117.appspot.com",
 }
 
 transform = A.Compose([
@@ -35,8 +35,8 @@ class Model(nn.Module):
     def __init__(self, model_name, embedding_size):
         super(Model, self).__init__()
         self.model = timm.create_model(model_name, pretrained=True)
-        self.model.classifier = nn.Identity()
         in_features = self.model.classifier.in_features
+        self.model.classifier = nn.Identity()
         self.embedding = nn.Linear(in_features, embedding_size)
 
     def extract(self, images):
@@ -49,6 +49,7 @@ def create_model():
     weights = torch.load("weight.pkt", map_location=torch.device(CONFIG["device"]))
     del weights["fc.weight"]
     model.load_state_dict(weights)
+    return model
 
 # https://stackoverflow.com/questions/17170752/python-opencv-load-image-from-byte-string
 def fetch_image(image_name):
