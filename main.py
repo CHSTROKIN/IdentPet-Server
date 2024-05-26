@@ -3,11 +3,11 @@ import model
 
 app = Flask(__name__)
 
-@app.route("/")
+@app.route("/", methods=["GET"])
 def index():
     return "Hello, World!"
 
-@app.route("/embed")
+@app.route("/embed", methods=["GET"])
 def embed():
     fname = request.args.get("fname")
     embedding = model.embed_image(
