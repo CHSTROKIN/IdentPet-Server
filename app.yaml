@@ -25,3 +25,9 @@ handlers:
   # the entire handlers section) when there are no static files defined.
 - url: /.*
   script: auto
+
+
+instance_class: F4_1G
+
+entrypoint: gunicorn -b :$PORT -w 2 --threads 1 main:app
+
