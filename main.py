@@ -2,6 +2,7 @@ from flask import Flask, request, jsonify, make_response
 import model
 from google.cloud import storage
 import uuid
+import base64
 
 app = Flask(__name__)
 
@@ -24,16 +25,16 @@ def embed():
 # Dummy /image endpoint for testing.
 @app.route("/image", methods=["POST"])
 def image():
-    files = request.files
-    file = files.get('file')
-    fname = "sighting-" + uuid.uuid4() + file.filename.split('.')[-1]
-    blob = bucket.blob(fname)
+    data = base64.urlsafe_b64decode(request.json["base64"] + "==")
     
     storage_client = storage.Client()
     bucket = storage_client.bucket(model.CONFIG["bucket_name"])
     
+    fname = "sighting_" + str(uuid.uuid4()) + ".jpg"
+    blob = bucket.blob(fname)
+
     blob.upload_from_string(
-        file.read(), content_type=file.content_type
+        data, content_type="image/jpeg"
     )
     
     return make_response(jsonify({"id": fname}), 200)
