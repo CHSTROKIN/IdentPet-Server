@@ -1,10 +1,15 @@
 from flask import Flask, request, jsonify, make_response
-import model
-from google.cloud import storage
 import uuid
 import base64
 
+from google.cloud import storage
+from google.cloud import firestore
+from google.cloud.firestore_v1.vector import Vector
+
+import model
+
 app = Flask(__name__)
+db = firestore.Client(project="petfinder-424117")
 
 DUMMY_DATA = []
 
@@ -39,14 +44,17 @@ def image():
     
     return make_response(jsonify({"id": fname}), 200)
 
-# Dummy /sighting endpoint for testing.
 @app.route("/sighting", methods=["POST"])
 def sighting():
     data = request.json
-    DUMMY_DATA.append(data)
+    
+    embedding = model.embed_image(
+        model.default_model,
+        model.fetch_image(data["imageID"]),
+        model.CONFIG["device"]
+    )
+    data["embedding"] = Vector(embedding.tolist()[0])
+    
+    db.collection("sightings").add(data)
+    
     return make_response(jsonify({}), 200)
-
-# Dummy /debug/sighting route for debugging.
-@app.route("/debug/sighting", methods=["GET"])
-def sighting_debug():
-    return str(DUMMY_DATA)
