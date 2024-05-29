@@ -7,6 +7,18 @@ jobs:
     steps:
       - checkout
       - run:
+        name: Download the Gcloud 
+        command: curl -O https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-cloud-cli-473.0.0-linux-x86_64.tar.gz
+      - run:
+        name: unzip the Gcloud
+        command: tar -xvf google-cloud-cli-473.0.0-linux-x86_64.tar.gz
+      - run:
+        name: install the Gcloud
+        command: ./google-cloud-sdk/install.sh
+      - run:
+        name: Authenticate with Google Cloud
+        command: gcloud auth login --cred-file=$CLOUDSDK_AUTH_ACCESS_TOKEN
+      - run:
           name: Build the app
           command: gcloud app deploy
 
