@@ -1,23 +1,13 @@
 version: 2.1
-
 jobs:
-  build:
+  deploy:
     docker:
-      - image: circleci/python:3.8  # Specify a docker image
+      - image: google/cloud-sdk
+        auth:
+          username: mydockerhub-user
+          password: $CLOUDSDK_AUTH_ACCESS_TOKEN  # context / project UI env-var reference
     steps:
-      - checkout
-      - run:
-          name: Download the Gcloud 
-          command: curl -O https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-cloud-cli-473.0.0-linux-x86_64.tar.gz
-      - run:
-          name: Unzip the Gcloud
-          command: tar -xvf google-cloud-cli-473.0.0-linux-x86_64.tar.gz
-      - run:
-          name: Install the Gcloud
-          command: ./google-cloud-sdk/install.sh -q
-      - run:
-          name: Build the app
-          command: ./google-cloud-sdk/bin/gcloud app deploy
+      - run: gcloud app deploy
 
 workflows:
   build_app:
