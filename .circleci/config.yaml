@@ -1,0 +1,16 @@
+version: 2.1
+
+jobs:
+  build:
+    steps:
+      - run:
+          name: Build the app
+          command: gcloud app deploy
+
+workflows:
+  build_app:
+    jobs:
+      - build:
+          filters:
+            branches:
+              only: master
