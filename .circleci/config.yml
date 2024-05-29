@@ -3,9 +3,9 @@ jobs:
   build:
     docker:
       - image: google/cloud-sdk:latest
-        auth:
-          username: mydockerhub-user
-          password: $CLOUDSDK_AUTH_ACCESS_TOKEN  # context / project UI env-var reference
+        #auth:
+          #username: theoakande#mydockerhub-user
+          #password: $CLOUDSDK_AUTH_ACCESS_TOKEN  # context / project UI env-var reference
     steps:
       - run: gcloud app deploy
 
