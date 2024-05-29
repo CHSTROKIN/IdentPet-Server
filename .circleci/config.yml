@@ -16,12 +16,6 @@ jobs:
           name: Install the Gcloud
           command: ./google-cloud-sdk/install.sh -q
       - run:
-          name: Initialize the Gcloud
-          command: ./google-cloud-sdk/bin/gcloud init --skip-diagnostics
-      - run:
-          name: Authenticate with Google Cloud
-          command: ./google-cloud-sdk/bin/gcloud auth activate-service-account --key-file=$CLOUDSDK_AUTH_ACCESS_TOKEN
-      - run:
           name: Build the app
           command: ./google-cloud-sdk/bin/gcloud app deploy
 
