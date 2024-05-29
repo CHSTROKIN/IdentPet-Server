@@ -7,20 +7,23 @@ jobs:
     steps:
       - checkout
       - run:
-        name: Download the Gcloud 
-        command: curl -O https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-cloud-cli-473.0.0-linux-x86_64.tar.gz
+          name: Download the Gcloud 
+          command: curl -O https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-cloud-cli-473.0.0-linux-x86_64.tar.gz
       - run:
-        name: unzip the Gcloud
-        command: tar -xvf google-cloud-cli-473.0.0-linux-x86_64.tar.gz
+          name: Unzip the Gcloud
+          command: tar -xvf google-cloud-cli-473.0.0-linux-x86_64.tar.gz
       - run:
-        name: install the Gcloud
-        command: ./google-cloud-sdk/install.sh
+          name: Install the Gcloud
+          command: ./google-cloud-sdk/install.sh -q
       - run:
-        name: Authenticate with Google Cloud
-        command: gcloud auth login --cred-file=$CLOUDSDK_AUTH_ACCESS_TOKEN
+          name: Initialize the Gcloud
+          command: ./google-cloud-sdk/bin/gcloud init --skip-diagnostics
+      - run:
+          name: Authenticate with Google Cloud
+          command: ./google-cloud-sdk/bin/gcloud auth activate-service-account --key-file=$CLOUDSDK_AUTH_ACCESS_TOKEN
       - run:
           name: Build the app
-          command: gcloud app deploy
+          command: ./google-cloud-sdk/bin/gcloud app deploy
 
 workflows:
   build_app:
@@ -28,4 +31,6 @@ workflows:
       - build:
           filters:
             branches:
-              only: master
+              only:
+                - master
+
