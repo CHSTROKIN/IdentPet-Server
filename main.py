@@ -57,7 +57,7 @@ def sighting():
     
     return make_response(jsonify({}), 200)
 
-@app.route("/pet", methods=["GET"])
+@app.route("/pet/nearby", methods=["GET"])
 def pet():
     pets = db.collection("pets").stream()
     pet_data = []
@@ -76,6 +76,23 @@ def pet():
         })
     
     return make_response(jsonify(pet_data), 200)
+
+@app.route("/pet/data", methods=["GET", "POST"])
+def pet_id():
+    if request.method == "GET":
+        id = request.args.get("id")
+        doc_ref = db.collection("pets").document(id)
+        if not doc_ref.get().exists:
+            return make_response(jsonify({}), 404)
+        return make_response(jsonify(doc_ref.get().to_dict()), 200)
+    else:
+        data = request.json
+        if data["mode"] == "add":
+            data["id"] = str(uuid.uuid4())
+        db.collection("pets").document(data["id"]).set(data, merge=True)
+        return make_response(jsonify({
+            "petID": data["id"]
+        }), 200)
 
 @app.route("/pet/images", methods=["GET", "POST"])
 def pet_images():
