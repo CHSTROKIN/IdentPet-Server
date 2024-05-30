@@ -57,6 +57,7 @@ def sighting():
     
     return make_response(jsonify({}), 200)
 
+# https://stackoverflow.com/questions/46454496/how-to-determine-if-a-google-cloud-storage-blob-is-marked-share-publicly
 @app.route("/pet/nearby", methods=["GET"])
 def pet():
     pets = db.collection("pets").stream()
@@ -68,11 +69,15 @@ def pet():
         storage_client = storage.Client()
         bucket = storage_client.bucket(model.CONFIG["bucket_name"])
         blob = bucket.blob(summary_image)
-        blob.make_public()
+        
+        if "READER" not in blob.acl.all().get_roles():
+            blob.make_public()
         
         pet_data.append({
             "id": pet.id,
-            "image": blob.public_url 
+            "image": blob.public_url,
+            "name": pet.get("name"),
+            "type": pet.get("type"),
         })
     
     return make_response(jsonify(pet_data), 200)
@@ -105,7 +110,8 @@ def pet_images():
     
         for fname in images:
             blob = bucket.blob(fname)
-            blob.make_public()
+            if "READER" not in blob.acl.all().get_roles():
+                blob.make_public()
             image_urls.append(blob.public_url)
             
         return make_response(jsonify(image_urls), 200)
