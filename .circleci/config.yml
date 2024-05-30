@@ -1,0 +1,17 @@
+version: 2.1
+jobs:
+  build:
+    docker:
+      - image: google/cloud-sdk:latest
+    steps:
+      - run: gcloud app deploy --project petfinder-424117
+
+workflows:
+  build_app:
+    jobs:
+      - build:
+          filters:
+            branches:
+              only:
+                - master
+
