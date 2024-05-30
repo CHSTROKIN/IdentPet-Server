@@ -16,10 +16,12 @@ jobs:
       - run:
           name: Authenticate service account
           command: |
-            echo $GCLOUD_SERVICE_KEY | gcloud auth activate-service-account --key-file=-
+            echo $GCLOUD_SERVICE_KEY > key.json
+            gcloud auth activate-service-account app-engine-deployment@petfinder-424117.iam.gserviceaccount.com --key-file key.json
             gcloud --quiet config set project ${GOOGLE_PROJECT_ID}
             # gcloud --quiet config set compute/zone ${GOOGLE_COMPUTE_ZONE}
-            gcloud --quiet app deploy
+            gcloud app deploy
+
 
 workflows:
   deploy:
