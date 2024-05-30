@@ -3,16 +3,19 @@ version: 2.1
 jobs:
   deploy:
     docker:
-      - image: google/cloud-sdk:latest
-        auth: 
-          username: _json_key
-          password: $GOOGLE_CREDENTIALS
+      - image: google/cloud-sdk:latest 
+        auth:
+          username: liam.doan22@imperial.ac.uk
+          password: $DOCKERHUB_PASSWORD
 
     steps:
       - checkout
-      - run: 
-          name: Deploy to Google App Engine
-          command: gcloud app deploy --project $GCLOUD_PROJECT --quiet
+      - run:
+        name: Deploy
+        command: |
+          echo $GCLOUD_SERVICE_KEY | gcloud auth activate-service-account --key-file=-
+          gcloud --quiet config set project ${GOOGLE_PROJECT_ID}
+          gcloud app deploy
 
 workflows:
   deploy:
