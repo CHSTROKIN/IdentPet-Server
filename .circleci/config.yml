@@ -1,17 +1,14 @@
 version: 2.1
 
-orbs:
-  gcp-cli: circleci/gcp-cli@3.0.0
-
 jobs:
   deploy:
     docker:
       - image: google/cloud-sdk:latest
+        auth: _json_key
+        password: $GOOGLE_CREDENTIALS
+
     steps:
       - checkout
-      - gcp-cli/initialize:
-          gcloud-service-key: $GOOGLE_CREDENTIALS
-          project-id: $GCLOUD_PROJECT
       - run: 
           name: Deploy to Google App Engine
           command: gcloud app deploy --project $GCLOUD_PROJECT --quiet
