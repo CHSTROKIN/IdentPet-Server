@@ -11,11 +11,15 @@ jobs:
     steps:
       - checkout
       - run:
+          name: Dump GCloud Credentials to file
+          command: echo ${GCLOUD_SERVICE_KEY} > ./gcp-key.json
+      - run:
           name: Deploy
           command: |
-            echo $GCLOUD_SERVICE_KEY | gcloud auth activate-service-account --key-file=-
+            echo $GCLOUD_SERVICE_KEY | gcloud auth activate-service-account --key-file ./gcp-key.json
             gcloud --quiet config set project ${GOOGLE_PROJECT_ID}
-            gcloud app deploy
+            # gcloud --quiet config set compute/zone ${GOOGLE_COMPUTE_ZONE}
+            gcloud --quiet app deploy --project
 
 workflows:
   deploy:
