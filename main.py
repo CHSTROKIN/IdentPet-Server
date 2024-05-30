@@ -62,8 +62,13 @@ def sighting():
 def pet():
     pets = db.collection("pets").stream()
     pet_data = []
-    for pet in pets:
-        images = pet.get("images")
+    for pet in pets:       
+        data = pet.to_dict()
+        images = data.get("images", ["No_image_available.svg.png"])
+        
+        if "name" not in data or "type" not in data:
+            continue
+        
         summary_image = images[0]
         
         storage_client = storage.Client()
@@ -76,8 +81,8 @@ def pet():
         pet_data.append({
             "id": pet.id,
             "image": blob.public_url,
-            "name": pet.get("name"),
-            "type": pet.get("type"),
+            "name": data.get("name"),
+            "type": data.get("type"),
         })
     
     return make_response(jsonify(pet_data), 200)
@@ -92,12 +97,8 @@ def pet_id():
         return make_response(jsonify(doc_ref.get().to_dict()), 200)
     else:
         data = request.json
-        if data["mode"] == "add":
-            data["id"] = str(uuid.uuid4())
         db.collection("pets").document(data["id"]).set(data, merge=True)
-        return make_response(jsonify({
-            "petID": data["id"]
-        }), 200)
+        return make_response(jsonify({}), 200)
 
 @app.route("/pet/images", methods=["GET", "POST"])
 def pet_images():
@@ -117,8 +118,6 @@ def pet_images():
         return make_response(jsonify(image_urls), 200)
     else:
         data = request.json
-        if data["mode"] == "add":
-            data["id"] = str(uuid.uuid4())
         
         ref = db.collection("pets").document(data["id"]).get()
         
@@ -131,6 +130,4 @@ def pet_images():
                 "images": [data["imageID"]]
             })
         
-        return make_response(jsonify({
-            "petID": data["id"]
-        }), 200)
+        return make_response(jsonify({}), 200)
