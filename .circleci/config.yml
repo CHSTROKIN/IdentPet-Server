@@ -5,7 +5,7 @@ jobs:
       - image: google/cloud-sdk:latest
     steps:
       #- run: gcloud app deploy --project petfinder-424117
-      - run: ls ..
+      - run: ls -A
 
 workflows:
   build_app:
