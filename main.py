@@ -6,7 +6,7 @@ from google.cloud import storage
 from google.cloud import firestore
 from google.cloud.firestore_v1.vector import Vector
 
-import model
+impo model
 
 app = Flask(__name__)
 db = firestore.Client(project="petfinder-424117")
