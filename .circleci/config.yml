@@ -1,16 +1,25 @@
 version: 2.1
+
+orbs:
+  gcp-cli: circleci/gcp-cli@3.0.0
+
 jobs:
-  build:
+  deploy:
     docker:
       - image: google/cloud-sdk:latest
     steps:
       - checkout
-      - run: gcloud app deploy --project petfinder-424117
+      - gcp-cli/initialize:
+          gcloud-service-key: $GOOGLE_CREDENTIALS
+          project-id: $GCLOUD_PROJECT
+      - run: 
+          name: Deploy to Google App Engine
+          command: gcloud app deploy --project $GCLOUD_PROJECT --quiet
 
 workflows:
-  build_app:
+  deploy:
     jobs:
-      - build:
+      - deploy:
           filters:
             branches:
               only:
