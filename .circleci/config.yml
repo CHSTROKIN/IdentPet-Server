@@ -4,8 +4,7 @@ jobs:
     docker:
       - image: google/cloud-sdk:latest
     steps:
-      #- run: gcloud app deploy --project petfinder-424117
-      - run: ls -A
+      - run: gcloud app deploy --project petfinder-424117
 
 workflows:
   build_app:
