@@ -1,15 +1,32 @@
 version: 2.1
+
 jobs:
-  build:
+  deploy:
     docker:
-      - image: google/cloud-sdk:latest
+      - image: google/cloud-sdk:latest 
+        auth:
+          username: liam.doan22@imperial.ac.uk
+          password: $DOCKERHUB_PASSWORD
+
     steps:
-      - run: gcloud app deploy --project petfinder-424117
+      - checkout
+      - run:
+          name: Dump GCloud Credentials to file
+          command: echo ${GCLOUD_SERVICE_KEY} > ./gcp-key.json
+      - run:
+          name: Authenticate service account
+          command: |
+            echo $GCLOUD_SERVICE_KEY > key.json
+            gcloud auth activate-service-account app-engine-deployment@petfinder-424117.iam.gserviceaccount.com --key-file key.json
+            gcloud --quiet config set project ${GOOGLE_PROJECT_ID}
+            # gcloud --quiet config set compute/zone ${GOOGLE_COMPUTE_ZONE}
+            gcloud app deploy
+
 
 workflows:
-  build_app:
+  deploy:
     jobs:
-      - build:
+      - deploy:
           filters:
             branches:
               only:
