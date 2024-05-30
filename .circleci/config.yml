@@ -4,8 +4,9 @@ jobs:
   deploy:
     docker:
       - image: google/cloud-sdk:latest
-        auth: _json_key
-        password: $GOOGLE_CREDENTIALS
+        auth: 
+          username: _json_key
+          password: $GOOGLE_CREDENTIALS
 
     steps:
       - checkout
