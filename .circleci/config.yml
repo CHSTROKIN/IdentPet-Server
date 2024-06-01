@@ -1,6 +1,17 @@
 version: 2.1
 
+
 jobs:
+  test:
+    working_directory: ~/app/PetfinderServer
+    docker:
+      - image: eeacms/pyflakes:py3
+    steps:
+      - checkout
+      - run:
+          name: Check syntax
+          command: pyflakes main.py
+
   deploy:
     docker:
       - image: google/cloud-sdk:latest 
@@ -26,7 +37,10 @@ jobs:
 workflows:
   deploy:
     jobs:
+      - test
       - deploy:
+          requires:
+            - test
           filters:
             branches:
               only:
