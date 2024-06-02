@@ -57,15 +57,55 @@ def sighting():
     
     return make_response(jsonify({}), 200)
 
+@app.route("/pet/found", methods=["POST"])
+def found():
+    data = request.json
+    id = data["id"]
+    db.collection("pets").document(id).set({
+        "missing": False
+    }, merge=True)
+    db.collection("alerts").document(id).delete()
+    return make_response(jsonify({}), 200)
+
 @app.route("/pet/alert", methods=["POST"])
 def alert():
     data = request.json
     id = data["id"]
-    db.collection("alerts").add(data)
+    db.collection("alerts").document(id).set(data, merge=True)
     db.collection("pets").document(id).set({
         "missing": True
     }, merge=True)
     return make_response(jsonify({}), 200)
+
+@app.route("/my/pets", methods=["GET"])
+def my_pets():
+    pets = db.collection("pets").stream()
+    pet_data = []
+    for pet in pets:
+        data = pet.to_dict()
+        images = data.get("images", ["No_image_available.svg.png"])
+        
+        if "name" not in data or "type" not in data:
+            continue
+        
+        summary_image = images[0]
+        
+        storage_client = storage.Client()
+        bucket = storage_client.bucket(model.CONFIG["bucket_name"])
+        blob = bucket.blob(summary_image)
+        
+        if "READER" not in blob.acl.all().get_roles():
+            blob.make_public()
+        
+        pet_data.append({
+            "id": pet.id,
+            "image": blob.public_url,
+            "name": data.get("name"),
+            "type": data.get("type"),
+            "missing": data.get("missing", False)
+        })
+    
+    return make_response(jsonify(pet_data), 200)
 
 # https://stackoverflow.com/questions/46454496/how-to-determine-if-a-google-cloud-storage-blob-is-marked-share-publicly
 @app.route("/pet/nearby", methods=["GET"])
