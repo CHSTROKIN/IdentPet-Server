@@ -65,7 +65,11 @@ def fetch_image(image_name):
     
     return img
 
-default_model = create_model()
+# default_model = create_model()
+class DummyModel:
+    def embed_image(*args, **kwargs):
+        return [0.0] * CONFIG["embedding_size"]
+default_model = DummyModel()
 
 @torch.inference_mode()
 def embed_image(model, image, device):
