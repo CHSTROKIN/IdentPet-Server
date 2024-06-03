@@ -85,7 +85,7 @@ def my_pets():
         data = pet.to_dict()
         images = data.get("images", ["No_image_available.svg.png"])
         
-        if "name" not in data or "type" not in data:
+        if "name" not in data or "animal" not in data or "breed" not in data or "description" not in data or "assistance" not in data:
             continue
         
         summary_image = images[0]
@@ -101,7 +101,10 @@ def my_pets():
             "id": pet.id,
             "image": blob.public_url,
             "name": data.get("name"),
-            "type": data.get("type"),
+            "animal": data.get("animal"),
+            "breed": data.get("breed"),
+            "description": data.get("description"),
+            "assistance": data.get("assistance"),
             "missing": data.get("missing", False)
         })
     
