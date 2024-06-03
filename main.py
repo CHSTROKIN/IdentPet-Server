@@ -1,29 +1,23 @@
-from flask import Flask, request, jsonify, make_response
+from flask import Flask, request, jsonify, make_response, url_for, redirect
 import uuid
 import base64
+import random
 
 from google.cloud import storage
 from google.cloud import firestore
 # from google.cloud.firestore_v1.vector import Vector
 
-import model
-
 app = Flask(__name__)
+app.config["DEBUG"] = True
+app.config["match_state"] = False
+app.config["match_function"] = lambda st: st
+app.config["bucket_name"] = "petfinder-424117.appspot.com"
+
 db = firestore.Client(project="petfinder-424117")
 
 @app.route("/", methods=["GET"])
 def index():
     return "Hello, World!"
-
-@app.route("/embed", methods=["GET"])
-def embed():
-    fname = request.args.get("fname")
-    embedding = model.embed_image(
-        model.default_model,
-        model.fetch_image(fname),
-        model.CONFIG["device"]
-    )
-    return {"embedding": embedding.tolist()}
 
 # Dummy /image endpoint for testing.
 @app.route("/image", methods=["POST"])
@@ -31,7 +25,7 @@ def image():
     data = base64.urlsafe_b64decode(request.json["base64"] + "==")
     
     storage_client = storage.Client()
-    bucket = storage_client.bucket(model.CONFIG["bucket_name"])
+    bucket = storage_client.bucket(app.config["bucket_name"])
     
     fname = "image_" + str(uuid.uuid4()) + ".jpg"
     blob = bucket.blob(fname)
@@ -45,16 +39,16 @@ def image():
 @app.route("/sighting", methods=["POST"])
 def sighting():
     data = request.json
+    (_, ref) = db.collection("sightings").add(data)
     
-    # embedding = model.embed_image(
-    #     model.default_model,
-    #     model.fetch_image(data["imageID"]),
-    #     model.CONFIG["device"]
-    # )
-    # data["embedding"] = Vector(embedding.tolist()[0])
+    match = app.config["match_function"](app.config["match_state"])
+    match_with = "" if not match else random.choice(list(db.collection("pets").stream())).id
     
-    db.collection("sightings").add(data)
-    
+    ref.set({
+        "match": match,
+        "match_with": match_with
+    }, merge=True)
+
     return make_response(jsonify({}), 200)
 
 @app.route("/pet/found", methods=["POST"])
@@ -91,7 +85,7 @@ def my_pets():
         summary_image = images[0]
         
         storage_client = storage.Client()
-        bucket = storage_client.bucket(model.CONFIG["bucket_name"])
+        bucket = storage_client.bucket(app.config["bucket_name"])
         blob = bucket.blob(summary_image)
         
         if "READER" not in blob.acl.all().get_roles():
@@ -133,7 +127,7 @@ def pet():
         summary_image = images[0]
         
         storage_client = storage.Client()
-        bucket = storage_client.bucket(model.CONFIG["bucket_name"])
+        bucket = storage_client.bucket(app.config["bucket_name"])
         blob = bucket.blob(summary_image)
         
         if "READER" not in blob.acl.all().get_roles():
@@ -171,7 +165,7 @@ def pet_images():
         image_urls = []
         
         storage_client = storage.Client()
-        bucket = storage_client.bucket(model.CONFIG["bucket_name"])
+        bucket = storage_client.bucket(app.config["bucket_name"])
     
         for fname in images:
             blob = bucket.blob(fname)
@@ -195,3 +189,57 @@ def pet_images():
             })
         
         return make_response(jsonify({}), 200)
+
+# Debug routes.
+@app.route("/debug", methods=["GET"])
+def debug():
+    return """
+    <h1>Debug</h1>
+    <p>Debugging routes for the PetFinder API.</p>
+    <ul>
+        <li><a href="/debug/reset">Reset Backend State</a></li>
+        <li><a href="/debug/match?mode=always">Images Always Match</a></li>
+        <li><a href="/debug/match?mode=never">Images Never Match</a></li>
+        <li><a href="/debug/match?mode=random">Images Coin-flip Match</a></li>
+        <li><a href="/debug/match?mode=alternate">Images Alternatingly Match</a></li>
+    </ul>
+    """
+
+@app.route("/debug/match", methods=["GET"])
+def debug_match():
+    if app.config["DEBUG"]:
+        mode = request.args.get("mode")
+        if mode == "always":
+            app.config["match_function"] = lambda st: True
+        elif mode == "never":
+            app.config["match_function"] = lambda st: False
+        elif mode == "random":
+            app.config["match_function"] = lambda st: random.choice([True, False])
+        elif mode == "alternate":
+            app.config["match_state"] = True
+            def match_alternate(st):
+                app.config["match_state"] = not app.config["match_state"]
+                return app.config["match_state"]
+            app.config["match_function"] = match_alternate
+        else:
+            return make_response("Invalid mode.", 400)
+        return redirect(url_for("debug"))
+    return make_response("Not allowed: application not in debug mode.", 403)
+
+@app.route("/debug/reset", methods=["GET"])
+def debug_reset():
+    if app.config["DEBUG"]:
+        pets = db.collection("pets").stream()
+        for pet in pets:
+            pet.reference.delete()
+            
+        sightings = db.collection("sightings").stream()
+        for sighting in sightings:
+            sighting.reference.delete()
+            
+        alerts = db.collection("alerts").stream()
+        for alert in alerts:
+            alert.reference.delete()
+            
+        return redirect(url_for("debug"))
+    return make_response("Not allowed: application not in debug mode.", 403)
