@@ -46,12 +46,12 @@ def image():
 def sighting():
     data = request.json
     
-    embedding = model.embed_image(
-        model.default_model,
-        model.fetch_image(data["imageID"]),
-        model.CONFIG["device"]
-    )
-    data["embedding"] = Vector(embedding.tolist()[0])
+    # embedding = model.embed_image(
+    #     model.default_model,
+    #     model.fetch_image(data["imageID"]),
+    #     model.CONFIG["device"]
+    # )
+    # data["embedding"] = Vector(embedding.tolist()[0])
     
     db.collection("sightings").add(data)
     
