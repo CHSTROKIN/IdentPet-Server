@@ -173,18 +173,9 @@ def pet_images():
         return make_response(jsonify(image_urls), 200)
     else:
         data = request.json
-        
-        ref = db.collection("pets").document(data["id"]).get()
-        
-        if ref.exists:
-            db.collection("pets").document(data["id"]).update({
-                "images": firestore.ArrayUnion([data["imageID"]])
-            })
-        else:
-            db.collection("pets").document(data["id"]).set({
-                "images": [data["imageID"]]
-            })
-        
+        pet_images = dbi.get_pet_images(data["id"], create_if_not_present=True)
+        pet_images = dbi.add_pet_image(pet_images, data["imageID"])
+        dbi.set_pet_images(pet_images)
         return make_response(jsonify({}), 200)
 
 # Debug routes.
