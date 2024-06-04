@@ -146,7 +146,7 @@ pet_alert_spec_post = Specification(
         "location_long": permissiveFloat,
         "condition": str,
         "more": str,
-        "assistance": lambda x: x.lower() == "true",
+        "assistance": lambda x: str(x).lower() == "true",
         "name": str
     },
 )

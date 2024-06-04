@@ -73,7 +73,7 @@ def alert():
         
         document = dbi.get_alert(interpreted["pet_id"], create_if_not_present=False)
         if document is None:
-            return s.pet_alert_spec_get.response([f"No alert found matching {interpreted['pet_id']}!"], code=404)
+            return s.pet_alert_spec_get.response(warnings=[f"No alert found matching {interpreted['pet_id']}!"], code=404)
         
         return s.pet_alert_spec_get.response(document.to_dict())
     else:
