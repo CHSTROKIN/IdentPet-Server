@@ -1,124 +1,98 @@
-from flask import Flask, request, jsonify, make_response, url_for, redirect
+import random
 import uuid
 import base64
-import random
 
-from google.cloud import storage
+from flask import Flask, request, jsonify, make_response, url_for, redirect
+
+from google.cloud import storage    # type: ignore
 from google.cloud import firestore
-# from google.cloud.firestore_v1.vector import Vector
+
+from database import DBInterface, SightingDocument, AlertDocument
+from specification import Specification, post_specifications_by_endpoint
+import specification as s
+from matcher import MatcherProtocol
+from matcher import SpoofMatch, SpoofTarget, SpoofMatcher
 
 app = Flask(__name__)
 app.config["DEBUG"] = True
 app.config["match_state"] = False
 app.config["match_function"] = lambda st: st
 app.config["bucket_name"] = "petfinder-424117.appspot.com"
+app.config["not_found_url"] = "https://storage.googleapis.com/petfinder-424117.appspot.com/No_image_available.svg.png"
+
 
 db = firestore.Client(project="petfinder-424117")
+
+dbi = DBInterface(project="petfinder-424117", bucket_name="petfinder-424117.appspot.com")
+matcher: SpoofMatcher = SpoofMatcher(SpoofMatch.ALWAYS, SpoofTarget.FIRST)
 
 @app.route("/", methods=["GET"])
 def index():
     return "Hello, World!"
 
-# Dummy /image endpoint for testing.
 @app.route("/image", methods=["POST"])
 def image():
     data = base64.urlsafe_b64decode(request.json["base64"] + "==")
-    
-    storage_client = storage.Client()
-    bucket = storage_client.bucket(app.config["bucket_name"])
-    
-    fname = "image_" + str(uuid.uuid4()) + ".jpg"
-    blob = bucket.blob(fname)
-    #blob.make_public()
-
-    blob.upload_from_string(
-        data, content_type="image/jpeg"
-    )
-    
+    fname = dbi.upload_image(data)
     return make_response(jsonify({"id": fname}), 200)
 
-@app.route("/sighting", methods=["GET", "POST"])
+@app.route("/sighting", methods=["POST"])
 def sighting():
-    if request.method == "GET":
-        return make_response(jsonify(
-            db.collection("sightings").document(request.args["id"]).get().to_dict()
-        ), 200)
-    else:
-        data = request.json
-        (_, ref) = db.collection("sightings").add(data)
-        
-        match = app.config["match_function"](app.config["match_state"])
-        alerts = list(db.collection("alerts").stream())
-        
-        match_with = []
-        if alerts:
-            match_with = [] if not match else [a.id for a in alerts]
-        else:
-            match = False
-        
-        for match_target in match_with:
-            if match:
-                alert_ref = db.collection("alerts").document(match_target)
-                if "matches" not in alert_ref.get().to_dict():
-                    alert_ref.set({
-                        "matches": [ref.id]
-                    }, merge=True)
-                else:
-                    alert_ref.set({
-                        "matches": firestore.ArrayUnion([ref.id])
-                    }, merge=True)
-        
-        ref.set({
-            "match": match,
-            "match_with": match_with
-        }, merge=True)
-
-        return make_response(jsonify({}), 200)
+    data = request.json
+    interpreted, warnings = s.sighting_spec.interpret_request(data, strict=True)
+    if warnings:
+        return s.sighting_spec.response(warnings=warnings)
+    
+    document = SightingDocument.from_dict(interpreted)
+    document = dbi.add_sighting_image(document, data["image"])
+    alerts = dbi.list_alerts()
+    matched = matcher.match(document, alerts)
+    
+    for match in matched:
+        dbi.add_sighting(match, document)
+        dbi.set_alert(match)
+    
+    return s.sighting_spec.response({
+        "matchN": len(matched),
+    })
 
 @app.route("/pet/found", methods=["POST"])
 def found():
     data = request.json
-    id = data["id"]
-    db.collection("pets").document(id).set({
-        "missing": False
-    }, merge=True)
-    db.collection("alerts").document(id).delete()
-    return make_response(jsonify({}), 200)
+    interpreted, warnings = s.pet_found_spec.interpret_request(data, strict=True)
+    if warnings:
+        return s.pet_found_spec.response(warnings=warnings)
+    
+    dbi.delete_alert(interpreted["id"])
+    return s.pet_found_spec.response()
 
 @app.route("/pet/alert", methods=["GET", "POST"])
 def alert():
     if request.method == "GET":
-        id = request.args.get("id")
-        doc_ref = db.collection("alerts").document(id)
-        if not doc_ref.get().exists:
-            return make_response(jsonify({}), 404)
+        data = request.args.to_dict(flat=True)
+        interpreted, warnings = s.pet_alert_spec_get.interpret_request(data, strict=True)
+        if warnings:
+            return s.pet_alert_spec_get.response(warnings=warnings)
         
-        data = doc_ref.get().to_dict()
-        if "matches" in data:
-            storage_client = storage.Client()
-            bucket = storage_client.bucket(app.config["bucket_name"])
-            
-            matches = []
-            for match in data["matches"]:
-                matches.append(db.collection("sightings").document(match).get().to_dict())
-            if len(matches) > 0 and "imageID" in matches[0]:
-                for match in matches:
-                    blob = bucket.blob(match["imageID"])
-                    if "READER" not in blob.acl.all().get_roles():
-                        blob.make_public()
-                    match["image"] = blob.public_url
-            data["matches"] = matches
+        document = dbi.get_alert(interpreted["pet_id"], create_if_not_present=False)
+        if document is None:
+            return s.pet_alert_spec_get.response([f"No alert found matching {interpreted['pet_id']}!"], code=404)
         
-        return make_response(jsonify(data), 200)
+        return s.pet_alert_spec_get.response(document.to_dict())
     else:
         data = request.json
-        id = data["id"]
-        db.collection("alerts").document(id).set(data, merge=True)
-        db.collection("pets").document(id).set({
-            "missing": True
-        }, merge=True)
-        return make_response(jsonify({}), 200)
+        interpreted, warnings = s.pet_alert_spec_post.interpret_request(data, strict=True)
+        if warnings:
+            return s.pet_alert_spec_post.response(warnings=warnings)
+        
+        if "sightings" not in interpreted:
+            interpreted["sightings"] = []
+            
+        document = AlertDocument.from_dict(interpreted)
+        dbi.set_alert(document)
+        return s.pet_alert_spec_post.response()
 
+# DEPRECATED: Will stop existing moving forwards, since local storage has taken on this role.
 @app.route("/my/pets", methods=["GET"])
 def my_pets():
     pets = db.collection("pets").stream()
@@ -160,39 +134,10 @@ def my_pets():
 # https://stackoverflow.com/questions/46454496/how-to-determine-if-a-google-cloud-storage-blob-is-marked-share-publicly
 @app.route("/pet/nearby", methods=["GET"])
 def pet():
-    pets = db.collection("pets").stream()
-    pet_data = []
-    for pet in pets:
-        data = pet.to_dict()
-        images = data.get("images", ["No_image_available.svg.png"])
-        
-        if "name" not in data or "animal" not in data or "breed" not in data or "description" not in data or "assistance" not in data:
-            continue
-            
-        if "missing" not in data or not data["missing"]:
-            continue
-        
-        summary_image = images[0]
-        
-        storage_client = storage.Client()
-        bucket = storage_client.bucket(app.config["bucket_name"])
-        blob = bucket.blob(summary_image)
-        
-        if "READER" not in blob.acl.all().get_roles():
-            blob.make_public()
-        
-        pet_data.append({
-            "id": pet.id,
-            "image": blob.public_url,
-            "name": data.get("name"),
-            "animal": data.get("animal"),
-            "breed": data.get("breed"),
-            "description": data.get("description"),
-            "assistance": data.get("assistance")
-        })
-    
+    pet_data = [p.to_dict() for p in dbi.list_alerts()]
     return make_response(jsonify(pet_data), 200)
 
+# DEPRECATED: Will stop existing moving forwards, since local storage has taken on this role.
 @app.route("/pet/data", methods=["GET", "POST"])
 def pet_id():
     if request.method == "GET":
@@ -206,6 +151,7 @@ def pet_id():
         db.collection("pets").document(data["id"]).set(data, merge=True)
         return make_response(jsonify({}), 200)
 
+# DEPRECATED: Will stop existing moving forwards, since local storage has taken on this role.
 @app.route("/pet/images", methods=["GET", "POST"])
 def pet_images():
     if request.method == "GET":
@@ -244,13 +190,67 @@ def debug():
     return """
     <h1>Debug</h1>
     <p>Debugging routes for the PetFinder API.</p>
+    <h2>One-Click Actions</h2>
     <ul>
         <li><a href="/debug/reset">Reset Backend State</a></li>
         <li><a href="/debug/match?mode=always">Images Always Match</a></li>
         <li><a href="/debug/match?mode=never">Images Never Match</a></li>
         <li><a href="/debug/match?mode=random">Images Coin-flip Match</a></li>
         <li><a href="/debug/match?mode=alternate">Images Alternatingly Match</a></li>
+        <li><a href="/debug/match?mode=all">Positive Match Propagates to All Alerts</a></li>
+        <li><a href="/debug/match?mode=one">Positive Match Propagates to One Alert</a></li>
+        <li><a href="/debug/match?mode=first">Positive Match Propagates to the First Alert</a></li>
+        <li><a href="/debug/match?mode=random">Positive Match Propagates to Random Alerts</a></li>
     </ul>
+    <h2>Request Composer</h2>
+    <ul>
+        <li><a href="/debug/request/image">POST /image</a></li>
+        <li><a href="/debug/request/sighting">POST /sighting</a></li>
+        <li><a href="/debug/request/pet/found">POST /pet/found</a></li>
+        <li><a href="/debug/request/pet/alert">POST /pet/alert</a></li>
+    </ul>
+    """
+
+@app.route("/debug/request/<path:endpoint>", methods=["GET"])
+def debug_request(endpoint):
+    spec = post_specifications_by_endpoint[endpoint]
+    fields = list(spec.required_fields.keys()) + list(spec.optional_fields.keys())
+    inputs = ["<label for='{}'>{}</label><br/><input type='text' name='{}' id='{}' placeholder='{}' />".format(f, f, f, f, f) for f in fields]
+    return f"""
+    <a href='/debug'>Back to Debug</a>
+    <h1>Send Debug Request to /{endpoint}</h1>
+    <p>Fill in the fields below to send a request to the specified endpoint.</p>
+    <div>
+        {'<br/>'.join(inputs)}<br/>
+        <button id='submit'>Send Request</button>
+    </div>
+    <h2>Result</h2>
+    <div id='result'></div>
+    <h2>Error</h2>
+    <div id='error'></div>
+    <h2>Common Values</h2>
+    <ul>
+        <li>Usable fname: No_image_available.svg.png</li>
+        <li>Usable fname: cat01_0.jpg</li>
+        <li>Usable base64: iVBORw0KGgoAAAANSUhEUgAAABQAAAAUCAIAAAAC64paAAAAM0lEQVR4nGJ5L3WZATcw39yAR5YJjxxBMKp5ZGhmVDx5DY+0zuuLtLJ5VPPI0AwIAAD//05PBxgI43H+AAAAAElFTkSuQmCC</li>
+    </ul>
+    <script>
+        document.getElementById('submit').addEventListener('click', function() {{
+            var data = {{
+                {', '.join([f + f": document.getElementById('{f}').value" for f in fields])}
+            }};
+            fetch('/{endpoint}', {{
+                method: 'POST',
+                headers: {{
+                    'Content-Type': 'application/json'
+                }},
+                body: JSON.stringify(data)
+            }})
+            .then(response => response.ok ? response.json() : Promise.reject(JSON.stringify(response)))
+            .then(data => {{document.getElementById('result').innerText = JSON.stringify(data, null, 2)}})
+            .catch(error => {{document.getElementById('error').innerText = error}});
+        }});
+    </script>
     """
 
 @app.route("/debug/match", methods=["GET"])
@@ -258,17 +258,21 @@ def debug_match():
     if app.config["DEBUG"]:
         mode = request.args.get("mode")
         if mode == "always":
-            app.config["match_function"] = lambda st: True
+            matcher.match_mode = SpoofMatch.ALWAYS
         elif mode == "never":
-            app.config["match_function"] = lambda st: False
+            matcher.match_mode = SpoofMatch.NEVER
         elif mode == "random":
-            app.config["match_function"] = lambda st: random.choice([True, False])
+            matcher.match_mode = SpoofMatch.HALF
         elif mode == "alternate":
-            app.config["match_state"] = True
-            def match_alternate(st):
-                app.config["match_state"] = not app.config["match_state"]
-                return app.config["match_state"]
-            app.config["match_function"] = match_alternate
+            matcher.match_mode = SpoofMatch.ALTERNATING
+        elif mode == "all":
+            matcher.target_mode = SpoofTarget.ALL
+        elif mode == "one":
+            matcher.target_mode = SpoofTarget.ONE
+        elif mode == "first":
+            matcher.target_mode = SpoofTarget.FIRST
+        elif mode == "random":
+            matcher.target_mode = SpoofTarget.RANDOM
         else:
             return make_response("Invalid mode.", 400)
         return redirect(url_for("debug"))
@@ -280,10 +284,6 @@ def debug_reset():
         pets = db.collection("pets").stream()
         for pet in pets:
             pet.reference.delete()
-            
-        sightings = db.collection("sightings").stream()
-        for sighting in sightings:
-            sighting.reference.delete()
             
         alerts = db.collection("alerts").stream()
         for alert in alerts:
