@@ -49,6 +49,7 @@ def sighting():
         
         match = app.config["match_function"](app.config["match_state"])
         alerts = list(db.collection("alerts").stream())
+        match_with = []
         if alerts:
             match_with = [] if not match else [a.id for a in alerts]
         else:
