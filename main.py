@@ -103,6 +103,7 @@ def alert():
                     if "READER" not in blob.acl.all().get_roles():
                         blob.make_public()
                     match["image"] = blob.public_url
+            data["matches"] = matches
         
         return make_response(jsonify(data), 200)
     else:
