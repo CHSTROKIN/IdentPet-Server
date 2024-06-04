@@ -36,34 +36,39 @@ def image():
     
     return make_response(jsonify({"id": fname}), 200)
 
-@app.route("/sighting", methods=["POST"])
+@app.route("/sighting", methods=["GET", "POST"])
 def sighting():
-    data = request.json
-    (_, ref) = db.collection("sightings").add(data)
-    
-    match = app.config["match_function"](app.config["match_state"])
-    alerts = list(db.collection("alerts").stream())
-    if alerts:
-        match_with = "" if not match else random.choice(alerts).id
+    if request.method == "GET":
+        return make_response(jsonify(
+            db.collection("sightings").document(request.args["id"]).get().to_dict()
+        ), 200)
     else:
-        match = False
-    
-    if match:
-        if "matches" not in db.collection("alerts").document(match_with).get().to_dict():
-            db.collection("alerts").document(match_with).set({
-                "matches": [ref.id]
-            }, merge=True)
+        data = request.json
+        (_, ref) = db.collection("sightings").add(data)
+        
+        match = app.config["match_function"](app.config["match_state"])
+        alerts = list(db.collection("alerts").stream())
+        if alerts:
+            match_with = "" if not match else random.choice(alerts).id
         else:
-            db.collection("alerts").document(match_with).set({
-                "matches": firestore.ArrayUnion([ref.id])
-            }, merge=True)
-    
-    ref.set({
-        "match": match,
-        "match_with": match_with
-    }, merge=True)
+            match = False
+        
+        if match:
+            if "matches" not in db.collection("alerts").document(match_with).get().to_dict():
+                db.collection("alerts").document(match_with).set({
+                    "matches": [ref.id]
+                }, merge=True)
+            else:
+                db.collection("alerts").document(match_with).set({
+                    "matches": firestore.ArrayUnion([ref.id])
+                }, merge=True)
+        
+        ref.set({
+            "match": match,
+            "match_with": match_with
+        }, merge=True)
 
-    return make_response(jsonify({}), 200)
+        return make_response(jsonify({}), 200)
 
 @app.route("/pet/found", methods=["POST"])
 def found():
