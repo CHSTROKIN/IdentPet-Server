@@ -128,14 +128,14 @@ class PetImagesDocument:
     @staticmethod
     def from_dict(data):
         return PetImagesDocument(
-            pet_id=data['pet_id'],
+            pet_id=data['id'],
             images=data['images'],
             image_urls=data['image_urls']
         )
     
     def to_dict(self):
         return {
-            'pet_id': self.pet_id,
+            'id': self.pet_id,
             'images': self.images,
             'image_urls': self.image_urls
         }
