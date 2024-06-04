@@ -48,6 +48,16 @@ def sighting():
     else:
         match = False
     
+    if match:
+        if "matches" not in db.collection("alerts").document(match_with).get().to_dict():
+            db.collection("alerts").document(match_with).set({
+                "matches": [ref.id]
+            }, merge=True)
+        else:
+            db.collection("alerts").document(match_with).set({
+                "matches": firestore.ArrayUnion([ref.id])
+            }, merge=True)
+    
     ref.set({
         "match": match,
         "match_with": match_with
@@ -65,15 +75,22 @@ def found():
     db.collection("alerts").document(id).delete()
     return make_response(jsonify({}), 200)
 
-@app.route("/pet/alert", methods=["POST"])
+@app.route("/pet/alert", methods=["GET", "POST"])
 def alert():
-    data = request.json
-    id = data["id"]
-    db.collection("alerts").document(id).set(data, merge=True)
-    db.collection("pets").document(id).set({
-        "missing": True
-    }, merge=True)
-    return make_response(jsonify({}), 200)
+    if request.method == "GET":
+        id = request.args.get("id")
+        doc_ref = db.collection("alerts").document(id)
+        if not doc_ref.get().exists:
+            return make_response(jsonify({}), 404)
+        return make_response(jsonify(doc_ref.get().to_dict()), 200)
+    else:
+        data = request.json
+        id = data["id"]
+        db.collection("alerts").document(id).set(data, merge=True)
+        db.collection("pets").document(id).set({
+            "missing": True
+        }, merge=True)
+        return make_response(jsonify({}), 200)
 
 @app.route("/my/pets", methods=["GET"])
 def my_pets():
