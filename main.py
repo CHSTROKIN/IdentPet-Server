@@ -42,7 +42,11 @@ def sighting():
     (_, ref) = db.collection("sightings").add(data)
     
     match = app.config["match_function"](app.config["match_state"])
-    match_with = "" if not match else random.choice(list(db.collection("pets").stream())).id
+    alerts = list(db.collection("alerts").stream())
+    if alerts:
+        match_with = "" if not match else random.choice().id
+    else:
+        match = False
     
     ref.set({
         "match": match,
