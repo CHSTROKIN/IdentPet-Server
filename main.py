@@ -29,6 +29,7 @@ def image():
     
     fname = "image_" + str(uuid.uuid4()) + ".jpg"
     blob = bucket.blob(fname)
+    blob.make_public()
 
     blob.upload_from_string(
         data, content_type="image/jpeg"
@@ -90,10 +91,18 @@ def alert():
         
         data = doc_ref.get().to_dict()
         if "matches" in data:
+            storage_client = storage.Client()
+            bucket = storage_client.bucket(app.config["bucket_name"])
+            
             matches = []
             for match in data["matches"]:
                 matches.append(db.collection("sightings").document(match).get().to_dict())
-            data["matches"] = matches
+            if len(matches) > 0 and "imageID" in matches[0]:
+                for match in matches:
+                    blob = bucket.blob(match["imageID"])
+                    if "READER" not in blob.acl.all().get_roles():
+                        blob.make_public()
+                    match["image"] = blob.public_url
         
         return make_response(jsonify(data), 200)
     else:
