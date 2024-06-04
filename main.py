@@ -1,5 +1,3 @@
-import random
-import uuid
 import base64
 
 from flask import Flask, request, jsonify, make_response, url_for, redirect
@@ -8,9 +6,8 @@ from google.cloud import storage    # type: ignore
 from google.cloud import firestore
 
 from database import DBInterface, SightingDocument, AlertDocument
-from specification import Specification, post_specifications_by_endpoint
+from specification import post_specifications_by_endpoint
 import specification as s
-from matcher import MatcherProtocol
 from matcher import SpoofMatch, SpoofTarget, SpoofMatcher
 
 app = Flask(__name__)
