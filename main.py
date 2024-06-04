@@ -49,6 +49,7 @@ def sighting():
         
         match = app.config["match_function"](app.config["match_state"])
         alerts = list(db.collection("alerts").stream())
+        
         match_with = []
         if alerts:
             match_with = [] if not match else [a.id for a in alerts]
@@ -57,13 +58,13 @@ def sighting():
         
         for match_target in match_with:
             if match:
-                ref = db.collection("alerts").document(match_target)
-                if "matches" not in ref.get().to_dict():
-                    ref.set({
+                alert_ref = db.collection("alerts").document(match_target)
+                if "matches" not in alert_ref.get().to_dict():
+                    alert_ref.set({
                         "matches": [ref.id]
                     }, merge=True)
                 else:
-                    ref.set({
+                    alert_ref.set({
                         "matches": firestore.ArrayUnion([ref.id])
                     }, merge=True)
         
