@@ -29,7 +29,7 @@ def image():
     
     fname = "image_" + str(uuid.uuid4()) + ".jpg"
     blob = bucket.blob(fname)
-    blob.make_public()
+    #blob.make_public()
 
     blob.upload_from_string(
         data, content_type="image/jpeg"
