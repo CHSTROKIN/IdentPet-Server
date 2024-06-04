@@ -87,7 +87,15 @@ def alert():
         doc_ref = db.collection("alerts").document(id)
         if not doc_ref.get().exists:
             return make_response(jsonify({}), 404)
-        return make_response(jsonify(doc_ref.get().to_dict()), 200)
+        
+        data = doc_ref.get().to_dict()
+        if "matches" in data:
+            matches = []
+            for match in data["matches"]:
+                matches.append(db.collection("sightings").document(match).get().to_dict())
+            data["matches"] = matches
+        
+        return make_response(jsonify(data), 200)
     else:
         data = request.json
         id = data["id"]
