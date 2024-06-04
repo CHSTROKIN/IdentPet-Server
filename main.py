@@ -57,8 +57,8 @@ def sighting():
         
         for match_target in match_with:
             if match:
-                ref = db.collection("alerts").document(match_target).get()
-                if "matches" not in ref.to_dict():
+                ref = db.collection("alerts").document(match_target)
+                if "matches" not in ref.get().to_dict():
                     ref.set({
                         "matches": [ref.id]
                     }, merge=True)
