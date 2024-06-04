@@ -132,6 +132,12 @@ def my_pets():
 @app.route("/pet/nearby", methods=["GET"])
 def pet():
     pet_data = [p.to_dict() for p in dbi.list_alerts()]
+    for data in pet_data:
+        urls = dbi.get_pet_images(data["pet_id"]).image_urls
+        if len(urls) == 0:
+            data["image"] = app.config["not_found_url"]
+        else:
+            data["image"] = urls[0]
     return make_response(jsonify(pet_data), 200)
 
 # DEPRECATED: Will stop existing moving forwards, since local storage has taken on this role.
