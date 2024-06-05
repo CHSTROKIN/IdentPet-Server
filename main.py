@@ -57,7 +57,7 @@ def sighting():
         dbi.set_alert(match)
         if match.push_token is not None:
             send_push_message(match.push_token, "Sighting Alert",
-                              f"Your pet has been sighted! Check the app for more details.",
+                              "Your pet has been sighted! Check the app for more details.",
                               {"pet_id": match.pet_id})
         
     return s.sighting_spec.response({
