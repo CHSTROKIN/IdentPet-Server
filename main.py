@@ -21,7 +21,7 @@ app.config["not_found_url"] = "https://storage.googleapis.com/petfinder-424117.a
 db = firestore.Client(project="petfinder-424117")
 
 dbi = DBInterface(project="petfinder-424117", bucket_name="petfinder-424117.appspot.com")
-matcher: SpoofMatcher = SpoofMatcher(SpoofMatch.ALWAYS, SpoofTarget.FIRST)
+matcher: SpoofMatcher = SpoofMatcher(SpoofMatch.ALWAYS, SpoofTarget.ALL)
 
 @app.route("/", methods=["GET"])
 def index():
@@ -142,7 +142,7 @@ def my_pets():
 def pet():
     pet_data = [p.to_dict() for p in dbi.list_alerts()]
     for data in pet_data:
-        urls = dbi.get_pet_images(data["pet_id"]).image_urls
+        urls = dbi.get_pet_images(data["pet_id"], create_if_not_present=True).image_urls
         if len(urls) == 0:
             data["image"] = app.config["not_found_url"]
         else:
@@ -190,7 +190,9 @@ def pet_images():
 # Debug routes.
 @app.route("/debug", methods=["GET"])
 def debug():
-    return render_template("debug.html.j2")
+    return render_template("debug.html.j2",
+                           mode=matcher.match_mode.name,
+                           target=matcher.target_mode.name)
 
 @app.route("/debug/request/<path:endpoint>", methods=["GET"])
 def debug_request(endpoint):
