@@ -64,3 +64,4 @@ tzdata==2024.1
 urllib3==2.2.1
 Werkzeug==3.0.3
 gunicorn
+exponent_server_sdk==2.1.0

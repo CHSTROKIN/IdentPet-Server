@@ -149,7 +149,8 @@ pet_alert_spec_post = Specification(
         "condition": str,
         "more": str,
         "assistance": lambda x: str(x).lower() == "true",
-        "name": str
+        "name": str,
+        "push_token": str,
     },
 )
 

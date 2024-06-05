@@ -46,7 +46,7 @@ class SightingDocument:
             health=data.get('health'),
             match_with=data.get('match_with'),
             image=data.get('image'),
-            image_url=data.get('image_url')
+            image_url=data.get('image_url'),
         )
     
     def to_dict(self):
@@ -62,7 +62,7 @@ class SightingDocument:
             'health': self.health,
             'match_with': self.match_with,
             'image': self.image,
-            'image_url': self.image_url
+            'image_url': self.image_url,
         }
 
 # Associated with the 'alerts' collection.
@@ -73,6 +73,7 @@ class AlertDocument:
         description:   str   | None = None, assistance:    bool  | None = None, 
         location_lat:  float | None = None, location_long: float | None = None,
         condition:     str   | None = None, more:          str   | None = None,
+        push_token:    str   | None = None
         ):
         
         self.pet_id = pet_id
@@ -86,6 +87,7 @@ class AlertDocument:
         self.condition = condition
         self.more = more
         self.sightings = sightings
+        self.push_token = push_token
     
     @staticmethod
     def from_dict(data):
@@ -100,7 +102,8 @@ class AlertDocument:
             location_long=data.get('location_long'),
             condition=data.get('condition'),
             more=data.get('more'),
-            sightings=[SightingDocument.from_dict(s) for s in data.get('sightings')]
+            sightings=[SightingDocument.from_dict(s) for s in data.get('sightings')],
+            push_token=data.get('push_token')
         )
     
     def to_dict(self):
@@ -115,7 +118,8 @@ class AlertDocument:
             'location_long': self.location_long,
             'condition': self.condition,
             'more': self.more,
-            'sightings': [s.to_dict() for s in self.sightings]
+            'sightings': [s.to_dict() for s in self.sightings],
+            'push_token': self.push_token
         }
 
 # Associated with the 'pets' collection.

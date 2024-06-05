@@ -9,6 +9,7 @@ from database import DBInterface, SightingDocument, AlertDocument
 from specification import post_specifications_by_endpoint
 import specification as s
 from matcher import SpoofMatch, SpoofTarget, SpoofMatcher
+from notification import send_push_message
 
 app = Flask(__name__)
 app.config["DEBUG"] = True
@@ -43,23 +44,24 @@ def sighting():
     document = SightingDocument.from_dict(interpreted)
     document = dbi.add_sighting_image(document, data["image"])
     alerts = dbi.list_alerts()
+    
     matched = matcher.match(document, alerts)
+    pet_ids = set([m.pet_id for m in matched])
+    if "pet_id" in interpreted and interpreted["pet_id"] not in pet_ids:
+        match = dbi.get_alert(interpreted["pet_id"], create_if_not_present=False)
+        if match is not None:
+            matched.append(match)
     
     for match in matched:
         dbi.add_sighting(match, document)
         dbi.set_alert(match)
-    
-    match_n = len(matched)
-    
-    if "pet_id" in interpreted:
-        match = dbi.get_alert(interpreted["pet_id"], create_if_not_present=False)
-        if match is not None:
-            dbi.add_sighting(match, document)
-            dbi.set_alert(match)
-            match_n += 1
-    
+        if match.push_token is not None:
+            send_push_message(match.push_token, "Sighting Alert",
+                              f"Your pet has been sighted! Check the app for more details.",
+                              {"pet_id": match.pet_id})
+        
     return s.sighting_spec.response({
-        "matchN": match_n,
+        "matchN": len(matched),
     })
 
 @app.route("/pet/found", methods=["POST"])
