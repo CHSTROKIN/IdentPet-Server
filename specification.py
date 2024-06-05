@@ -106,6 +106,7 @@ sighting_spec = Specification(
         "behaviour": str,
         "health": str,
         "image": str,
+        "id": str
     },
     database_map={
         "specificLocation": "location_desc",

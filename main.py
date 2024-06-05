@@ -49,8 +49,17 @@ def sighting():
         dbi.add_sighting(match, document)
         dbi.set_alert(match)
     
+    match_n = len(matched)
+    
+    if "pet_id" in interpreted:
+        match = dbi.get_alert(interpreted["pet_id"], create_if_not_present=False)
+        if match is not None:
+            dbi.add_sighting(match, document)
+            dbi.set_alert(match)
+            match_n += 1
+    
     return s.sighting_spec.response({
-        "matchN": len(matched),
+        "matchN": match_n,
     })
 
 @app.route("/pet/found", methods=["POST"])
