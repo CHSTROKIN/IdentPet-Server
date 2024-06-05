@@ -1,6 +1,6 @@
 import base64
 
-from flask import Flask, request, jsonify, make_response, url_for, redirect
+from flask import Flask, request, jsonify, make_response, url_for, redirect, render_template
 
 from google.cloud import storage    # type: ignore
 from google.cloud import firestore
@@ -181,71 +181,13 @@ def pet_images():
 # Debug routes.
 @app.route("/debug", methods=["GET"])
 def debug():
-    return """
-    <h1>Debug</h1>
-    <p>Debugging routes for the PetFinder API.</p>
-    <h2>One-Click Actions</h2>
-    <ul>
-        <li><a href="/debug/reset">Reset Backend State</a></li>
-        <li><a href="/debug/match?mode=always">Images Always Match</a></li>
-        <li><a href="/debug/match?mode=never">Images Never Match</a></li>
-        <li><a href="/debug/match?mode=random">Images Coin-flip Match</a></li>
-        <li><a href="/debug/match?mode=alternate">Images Alternatingly Match</a></li>
-        <li><a href="/debug/match?mode=all">Positive Match Propagates to All Alerts</a></li>
-        <li><a href="/debug/match?mode=one">Positive Match Propagates to One Alert</a></li>
-        <li><a href="/debug/match?mode=first">Positive Match Propagates to the First Alert</a></li>
-        <li><a href="/debug/match?mode=random">Positive Match Propagates to Random Alerts</a></li>
-    </ul>
-    <h2>Request Composer</h2>
-    <ul>
-        <li><a href="/debug/request/image">POST /image</a></li>
-        <li><a href="/debug/request/sighting">POST /sighting</a></li>
-        <li><a href="/debug/request/pet/found">POST /pet/found</a></li>
-        <li><a href="/debug/request/pet/alert">POST /pet/alert</a></li>
-    </ul>
-    """
+    return render_template("debug.html.j2")
 
 @app.route("/debug/request/<path:endpoint>", methods=["GET"])
 def debug_request(endpoint):
     spec = post_specifications_by_endpoint[endpoint]
     fields = list(spec.required_fields.keys()) + list(spec.optional_fields.keys())
-    inputs = ["<label for='{}'>{}</label><br/><input type='text' name='{}' id='{}' placeholder='{}' />".format(f, f, f, f, f) for f in fields]
-    return f"""
-    <a href='/debug'>Back to Debug</a>
-    <h1>Send Debug Request to /{endpoint}</h1>
-    <p>Fill in the fields below to send a request to the specified endpoint.</p>
-    <div>
-        {'<br/>'.join(inputs)}<br/>
-        <button id='submit'>Send Request</button>
-    </div>
-    <h2>Result</h2>
-    <div id='result'></div>
-    <h2>Error</h2>
-    <div id='error'></div>
-    <h2>Common Values</h2>
-    <ul>
-        <li>Usable fname: No_image_available.svg.png</li>
-        <li>Usable fname: cat01_0.jpg</li>
-        <li>Usable base64: iVBORw0KGgoAAAANSUhEUgAAABQAAAAUCAIAAAAC64paAAAAM0lEQVR4nGJ5L3WZATcw39yAR5YJjxxBMKp5ZGhmVDx5DY+0zuuLtLJ5VPPI0AwIAAD//05PBxgI43H+AAAAAElFTkSuQmCC</li>
-    </ul>
-    <script>
-        document.getElementById('submit').addEventListener('click', function() {{
-            var data = {{
-                {', '.join([f + f": document.getElementById('{f}').value" for f in fields])}
-            }};
-            fetch('/{endpoint}', {{
-                method: 'POST',
-                headers: {{
-                    'Content-Type': 'application/json'
-                }},
-                body: JSON.stringify(data)
-            }})
-            .then(response => response.ok ? response.json() : Promise.reject(JSON.stringify(response)))
-            .then(data => {{document.getElementById('result').innerText = JSON.stringify(data, null, 2)}})
-            .catch(error => {{document.getElementById('error').innerText = error}});
-        }});
-    </script>
-    """
+    return render_template("composer.html.j2", endpoint=endpoint, fields=fields)
 
 @app.route("/debug/match", methods=["GET"])
 def debug_match():

@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<htmL>
+    <head>
+        <title>Request Composer</title>
+        <link rel="stylesheet" href="{{ url_for('static', filename='debug.css')}}">
+    </head>
+    <body>
+        <a href='/debug'>Back to Debug</a>
+        <h1>Send Debug Request to /{{ endpoint }}</h1>
+        <p>Fill in the fields below to send a request to the specified endpoint.</p>
+        <div>
+            {% for f in fields %}
+                <label for='{{ f }}'>{{ f }}</label>
+                <input class="form-input" id='{{ f }}' type='text'><br/>
+            {% endfor %}
+            <button id='submit'>Send Request</button>
+        </div>
+        <h2>Result</h2>
+        <div id='result'></div>
+        <h2>Error</h2>
+        <div id='error'></div>
+        <h2>Common Values</h2>
+        <ul>
+            <li>Usable fname: No_image_available.svg.png</li>
+            <li>Usable fname: cat01_0.jpg</li>
+            <li>Usable base64: iVBORw0KGgoAAAANSUhEUgAAABQAAAAUCAIAAAAC64paAAAAM0lEQVR4nGJ5L3WZATcw39yAR5YJjxxBMKp5ZGhmVDx5DY+0zuuLtLJ5VPPI0AwIAAD//05PBxgI43H+AAAAAElFTkSuQmCC</li>
+        </ul>
+        <script>
+            document.getElementById('submit').addEventListener('click', function() {
+                let data = {
+                    {% for f in required_fields %}
+                        '{{ f }}': document.getElementById('{{ f }}').value,
+                    {% endfor %}
+                };
+
+                fetch('/{endpoint}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(data)
+                })
+                .then(response => response.ok ? response.json() : Promise.reject(JSON.stringify(response)))
+                .then(data => {document.getElementById('result').innerText = JSON.stringify(data, null, 2)})
+                .catch(error => {document.getElementById('error').innerText = error});
+            });
+        </script>
+    </body>
+</htmL>

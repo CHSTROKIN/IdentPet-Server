@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Debug Page</title>
+        <link rel="stylesheet" href="{{ url_for('static', filename='debug.css')}}">
+    </head>
+    <body>
+        <h1>Debug</h1>
+        <p>Debugging routes for the PetFinder API.</p>
+        <h2>One-Click Actions</h2>
+        <ul>
+            <li><a href="/debug/reset">Reset Backend State</a></li>
+            <li><a href="/debug/match?mode=always">Images Always Match</a></li>
+            <li><a href="/debug/match?mode=never">Images Never Match</a></li>
+            <li><a href="/debug/match?mode=random">Images Coin-flip Match</a></li>
+            <li><a href="/debug/match?mode=alternate">Images Alternatingly Match</a></li>
+            <li><a href="/debug/match?mode=all">Positive Match Propagates to All Alerts</a></li>
+            <li><a href="/debug/match?mode=one">Positive Match Propagates to One Alert</a></li>
+            <li><a href="/debug/match?mode=first">Positive Match Propagates to the First Alert</a></li>
+            <li><a href="/debug/match?mode=random">Positive Match Propagates to Random Alerts</a></li>
+        </ul>
+        <h2>Request Composer</h2>
+        <ul>
+            <li><a href="/debug/request/image">POST /image</a></li>
+            <li><a href="/debug/request/sighting">POST /sighting</a></li>
+            <li><a href="/debug/request/pet/found">POST /pet/found</a></li>
+            <li><a href="/debug/request/pet/alert">POST /pet/alert</a></li>
+        </ul>
+    </body>
+</html>
