@@ -110,6 +110,7 @@ sighting_spec = Specification(
     },
     database_map={
         "specificLocation": "location_desc",
+        "id": "pet_id"
     },
     response_fields={
         "matchN": int
