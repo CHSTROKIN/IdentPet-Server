@@ -202,6 +202,23 @@ def debug_request(endpoint):
     fields = list(spec.required_fields.keys()) + list(spec.optional_fields.keys())
     return render_template("composer.html.j2", endpoint=endpoint, fields=fields)
 
+@app.route("/debug/doc/<path:endpoint>", methods=["GET"])
+def debug_doc(endpoint):
+    if endpoint in post_specifications_by_endpoint:
+        spec = post_specifications_by_endpoint[endpoint]
+    elif endpoint in s.get_specifications_by_endpoint:
+        spec = s.get_specifications_by_endpoint[endpoint]
+    else:
+        return make_response("No specification found for endpoint.", 404)
+    required_fields = list(spec.required_fields.keys())
+    optional_fields = list(spec.optional_fields.keys())
+    renamed_fields = [(k, v) for k, v in spec.database_map.items()]
+    return render_template("specification.html.j2",
+                           endpoint="/" + endpoint,
+                           required_fields=required_fields,
+                           optional_fields=optional_fields,
+                           renamed_fields=renamed_fields)
+
 @app.route("/debug/match", methods=["GET"])
 def debug_match():
     if app.config["DEBUG"]:

@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Specification for '{{ endpoint }}'</title>
+        <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/debug.css') }}">
+    </head>
+    <body>
+        <h1>Specification for '{{ endpoint }}'</h1>
+        <h2>Required Fields</h2>
+        <ul>
+            {% for field in required_fields %}
+                <li>{{ field }}</li>
+            {% endfor %}
+        </ul>
+        <h2>Optional Fields</h2>
+        <ul>
+            {% for field in optional_fields %}
+                <li>{{ field }}</li>
+            {% endfor %}
+        </ul>
+        <h2>Renamed Fields</h2>
+        <ul>
+            {% for field, renamed in renamed_fields %}
+                <li>{{ field }} -> {{ renamed }}</li>
+            {% endfor %}
+        </ul>
+    </body>
+</html>

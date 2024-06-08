@@ -180,6 +180,10 @@ pet_alert_spec_get = Specification(
     }
 )
 
+get_specifications_by_endpoint = {
+    "pet/alert": pet_alert_spec_get
+}
+
 post_specifications_by_endpoint = {
     "image": upload_image_spec,
     "sighting": sighting_spec,
