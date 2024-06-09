@@ -17,7 +17,8 @@ class SightingDocument:
         breed:         str   | None = None, color:         str   | None = None,
         other:         str   | None = None, behaviour:     str   | None = None,
         health:        str   | None = None, image:         CloudFilePath | None = None,
-        image_url:     ImageURL | None = None):
+        image_url:     ImageURL | None = None,
+        chat_id:       str   | None = None):
         
         self.location_lat = location_lat
         self.location_long = location_long
@@ -31,6 +32,7 @@ class SightingDocument:
         self.match_with = match_with
         self.image = image
         self.image_url = image_url
+        self.chat_id = chat_id
     
     @staticmethod
     def from_dict(data):
@@ -47,6 +49,7 @@ class SightingDocument:
             match_with=data.get('match_with'),
             image=data.get('image'),
             image_url=data.get('image_url'),
+            chat_id=data.get('chat_id')
         )
     
     def to_dict(self):
@@ -63,6 +66,7 @@ class SightingDocument:
             'match_with': self.match_with,
             'image': self.image,
             'image_url': self.image_url,
+            'chat_id': self.chat_id
         }
 
 # Associated with the 'alerts' collection.
