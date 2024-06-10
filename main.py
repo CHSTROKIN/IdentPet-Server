@@ -53,7 +53,7 @@ def channel():
         "members": [interpreted["chatID1"], interpreted["chatID2"]],
     }).create()
     return s.channel_spec.response()
-    
+
 
 @app.route("/sighting", methods=["POST"])
 def sighting():
@@ -80,7 +80,7 @@ def sighting():
             send_push_message(match.push_token, "Sighting Alert",
                               "Your pet has been sighted! Check the app for more details.",
                               {"pet_id": match.pet_id})
-        
+    
     return s.sighting_spec.response({
         "matchN": len(matched),
     })
@@ -91,7 +91,14 @@ def found():
     interpreted, warnings = s.pet_found_spec.interpret_request(data, strict=True)
     if warnings:
         return s.pet_found_spec.response(warnings=warnings)
-    
+    alert = dbi.get_alert(interpreted["id"], create_if_not_present=False)
+    sightings = alert.sightings
+    founded_list = []
+    for sight in sightings:
+        if sight["chat_id"] == interpreted["chat_id"]:
+            list.append(sight)
+    if len(founded_list) != 0:
+        return s.pet_found_spec.response(warnings=["You have already found this pet!"], code=409)
     dbi.delete_alert(interpreted["id"])
     return s.pet_found_spec.response()
 

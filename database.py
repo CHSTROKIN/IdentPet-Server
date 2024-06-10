@@ -33,6 +33,7 @@ class SightingDocument:
         self.image = image
         self.image_url = image_url
         self.chat_id = chat_id
+        self.found = False
     
     @staticmethod
     def from_dict(data):
@@ -221,6 +222,7 @@ class DBInterface:
         return document
     
     def delete_alert(self, pet_id: PetID):
+        
         self.client.collection('alerts').document(pet_id).delete()
     
     def delete_pet_images(self, pet_id: PetID):
