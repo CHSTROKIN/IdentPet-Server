@@ -99,7 +99,8 @@ def found():
     for sight in sightings:
         founded_list.append(sight.chat_id)
     if len(founded_list) != 0:
-        send_push_message(founded_list, "Pet Found", "Your pet has been found!", {"pet_id": interpreted["id"]})
+        for found in founded_list:
+            send_push_message(found, "Pet Found", "Your pet has been found!")
     dbi.delete_alert(interpreted["id"])
     return s.pet_found_spec.response()
 
