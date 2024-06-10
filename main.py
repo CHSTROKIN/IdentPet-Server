@@ -68,7 +68,7 @@ def sighting():
     pet_ids = set([m.pet_id for m in matched])
     
     if(data.get("expoPushToken") is not None):
-        document.chat_id = data.get("expoPushToken")
+        document.chat_id = data["expoPushToken"]
     
     if "pet_id" in interpreted and interpreted["pet_id"] not in pet_ids:
         match = dbi.get_alert(interpreted["pet_id"], create_if_not_present=False)
@@ -100,7 +100,7 @@ def found():
         founded_list.append(sight.chat_id)
     if len(founded_list) != 0:
         for found in founded_list:
-            send_push_message(found, "Pet Found", "Your pet has been found!")
+            send_push_message(found, "Pet Found", "Your pet has been found!", {"pet_id": interpreted["id"]})
     dbi.delete_alert(interpreted["id"])
     return s.pet_found_spec.response()
 
