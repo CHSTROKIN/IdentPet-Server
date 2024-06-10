@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Log Page</title>
+        <link rel="stylesheet" href="{{ url_for('static', filename='log.css')}}">
+    </head>
+    <body>
+        <h1>Logs</h1>
+        <p>Logs generated in response to requests.</p>
+        <h2>Specification Warnings</h2>
+        <dl>
+            {% for endpoint, method, warning in logs %}
+                <dt>{{ method }} {{ endpoint }}</dt>
+                <dd>{{ warning }}</dd>
+            {% endfor %}
+        </dl>
+    </body>
+</html>

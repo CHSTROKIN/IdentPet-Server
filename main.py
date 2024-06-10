@@ -26,6 +26,13 @@ dbi = DBInterface(project="petfinder-424117", bucket_name="petfinder-424117.apps
 matcher: SpoofMatcher = SpoofMatcher(SpoofMatch.ALWAYS, SpoofTarget.ALL)
 server_client = StreamChat(api_key="cecspa2wrfyy", api_secret="r4fq35udvu87ekgawu6t3mhx92pdq5sas24npgujxj9hp3gwzah49x5gc86bqqkx")
 
+logs: list[tuple[str, str, str]] = []
+def log(endpoint, method, messages):
+    for message in messages:
+        logs.append((endpoint, method, message))
+
+s.Specification.log_func = log
+
 @app.route("/", methods=["GET"])
 def index():
     return "Hello, World!"
@@ -209,6 +216,14 @@ def debug():
     return render_template("debug.html.j2",
                            mode=matcher.match_mode.name,
                            target=matcher.target_mode.name)
+
+@app.route("/debug/logs", methods=["GET"])
+def debug_logs():
+    return render_template("log.html.j2", logs=logs)
+
+@app.route("/debug/warning", methods=["GET"])
+def debug_warning():
+    return s.pet_alert_spec_get.response(warnings=["This is a warning."])
 
 @app.route("/debug/request/<path:endpoint>", methods=["GET"])
 def debug_request(endpoint):

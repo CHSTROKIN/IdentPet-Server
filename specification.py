@@ -12,11 +12,12 @@ from database import SightingDocument, AlertDocument
 Warning: TypeAlias = str
 API_BASE = "https://petfinder-424117.nw.r.appspot.com"
 
-permissiveFloat = lambda x: float(x) if x else float()
-permissiveInt = lambda x: int(x) if x else int()
-permissiveBool = lambda x: bool(x) if x else bool()
+permissiveFloat = lambda x=None: float(x) if x else float()
+permissiveInt = lambda x=None: int(x) if x else int()
+permissiveBool = lambda x=None: bool(x) if x else bool()
 
 class Specification:
+    log_func = lambda a, b, c: None
     """Contains a specification for one API endpoint.
     Each of the _fields dictionaries is a mapping between a field and a type.
     Type coercion will occur when the field is received from the user if
@@ -78,6 +79,9 @@ class Specification:
         
         response["warnings"] = response.get("warnings", []) + (warnings or [])
         code = code or (400 if warnings else 200)
+        
+        if response["warnings"]:
+            Specification.log_func(self.name, self.endpoint, response["warnings"])
 
         return make_response(jsonify(response), code)
 
