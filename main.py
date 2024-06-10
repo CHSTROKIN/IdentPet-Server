@@ -19,7 +19,6 @@ app.config["match_function"] = lambda st: st
 app.config["bucket_name"] = "petfinder-424117.appspot.com"
 app.config["not_found_url"] = "https://storage.googleapis.com/petfinder-424117.appspot.com/No_image_available.svg.png"
 
-
 db = firestore.Client(project="petfinder-424117")
 
 dbi = DBInterface(project="petfinder-424117", bucket_name="petfinder-424117.appspot.com")
@@ -54,7 +53,6 @@ def channel():
     }).create()
     return s.channel_spec.response()
 
-
 @app.route("/sighting", methods=["POST"])
 def sighting():
     data = request.json
@@ -68,6 +66,10 @@ def sighting():
     
     matched = matcher.match(document, alerts)
     pet_ids = set([m.pet_id for m in matched])
+    
+    if(data.get("expoPushToken") is not None):
+        document.chat_id = data.get("expoPushToken")
+    
     if "pet_id" in interpreted and interpreted["pet_id"] not in pet_ids:
         match = dbi.get_alert(interpreted["pet_id"], create_if_not_present=False)
         if match is not None:
@@ -122,8 +124,11 @@ def alert():
         
         if "sightings" not in interpreted:
             interpreted["sightings"] = []
-            
+        
         document = AlertDocument.from_dict(interpreted)
+        expoPushToken = data.get("expoPushToken")
+        if expoPushToken is not None:
+            document.push_token = expoPushToken
         dbi.set_alert(document)
         return s.pet_alert_spec_post.response()
 
