@@ -183,6 +183,17 @@ pet_alert_spec_get = Specification(
     }
 )
 
+channel_spec = Specification(
+    "Create a New Channel",
+    "/channel",
+    "Creates a new channel between the two provided chatIDs.",
+    method="POST",
+    required_fields={
+        "chatID1": str,
+        "chatID2": str
+    }
+)
+
 get_specifications_by_endpoint = {
     "pet/alert": pet_alert_spec_get
 }

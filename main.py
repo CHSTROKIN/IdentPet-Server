@@ -4,6 +4,7 @@ from flask import Flask, request, jsonify, make_response, url_for, redirect, ren
 
 from google.cloud import storage    # type: ignore
 from google.cloud import firestore
+from stream_chat import StreamChat
 
 from database import DBInterface, SightingDocument, AlertDocument
 from specification import post_specifications_by_endpoint
@@ -23,6 +24,7 @@ db = firestore.Client(project="petfinder-424117")
 
 dbi = DBInterface(project="petfinder-424117", bucket_name="petfinder-424117.appspot.com")
 matcher: SpoofMatcher = SpoofMatcher(SpoofMatch.ALWAYS, SpoofTarget.ALL)
+server_client = StreamChat(api_key="cecspa2wrfyy", api_secret="r4fq35udvu87ekgawu6t3mhx92pdq5sas24npgujxj9hp3gwzah49x5gc86bqqkx")
 
 @app.route("/", methods=["GET"])
 def index():
@@ -33,6 +35,18 @@ def image():
     data = base64.urlsafe_b64decode(request.json["base64"] + "==")
     fname = dbi.upload_image(data)
     return make_response(jsonify({"id": fname}), 200)
+
+@app.route("/channel", methods=["POST"])
+def channel():
+    data = request.json
+    interpreted, warnings = s.channel_spec.interpret_request(data, strict=True)
+    if warnings:
+        return s.channel_spec.response(warnings=warnings)
+    server_client.channel("messaging", {
+        "members": [interpreted["chatID1"], interpreted["chatID2"]],
+    }).create()
+    return s.channel_spec.response()
+    
 
 @app.route("/sighting", methods=["POST"])
 def sighting():
