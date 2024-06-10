@@ -33,7 +33,6 @@ class SightingDocument:
         self.image = image
         self.image_url = image_url
         self.chat_id = chat_id
-        self.found = False
     
     @staticmethod
     def from_dict(data):

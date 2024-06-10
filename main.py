@@ -95,10 +95,9 @@ def found():
     sightings = alert.sightings
     founded_list = []
     for sight in sightings:
-        if sight["chat_id"] == interpreted["chat_id"]:
-            list.append(sight)
+        founded_list.append(sight.chat_id)
     if len(founded_list) != 0:
-        return s.pet_found_spec.response(warnings=["You have already found this pet!"], code=409)
+        send_push_message(founded_list, "Pet Found", "Your pet has been found!", {"pet_id": interpreted["id"]})
     dbi.delete_alert(interpreted["id"])
     return s.pet_found_spec.response()
 
