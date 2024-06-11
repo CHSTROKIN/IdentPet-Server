@@ -67,12 +67,6 @@ def sighting():
     matched = matcher.match(document, alerts)
     pet_ids = set([m.pet_id for m in matched])
     
-    if(data.get("expoPushToken") is not None):
-        document.chat_id = data["expoPushToken"]
-    else:
-        document.chat_id = ""
-        
-    
     if "pet_id" in interpreted and interpreted["pet_id"] not in pet_ids:
         match = dbi.get_alert(interpreted["pet_id"], create_if_not_present=False)
         if match is not None:
@@ -89,6 +83,9 @@ def sighting():
     return s.sighting_spec.response({
         "matchN": len(matched),
     })
+    
+def valid_token(token: str):
+    return token.startswith("ExponentPushToken[") and token.endswith("]")
 
 @app.route("/pet/found", methods=["POST"])
 def found():
@@ -96,16 +93,22 @@ def found():
     interpreted, warnings = s.pet_found_spec.interpret_request(data, strict=True)
     if warnings:
         return s.pet_found_spec.response(warnings=warnings)
+    
     alert = dbi.get_alert(interpreted["id"], create_if_not_present=False)
-    sightings = alert.sightings
-    founded_list = []
-    for sight in sightings:
-        founded_list.append(sight.chat_id)
-    if len(founded_list) != 0:
-        for found in founded_list:
-            send_push_message(found, "You have helped someone reunite with their lost pet. Thank you for your help!", {"pet_id": interpreted["id"]})
+    push_tokens = [s.chat_id for s in alert.sightings if valid_token(s.chat_id)]
+    
+    invalid_token_warnings = []
+    for token in push_tokens:
+        try:
+            send_push_message(token,
+                          "Thank you!",
+                          "You have helped someone reunite with their lost pet. Thank you for your help!",
+                          {"pet_id": interpreted["id"]})
+        except ValueError:
+            invalid_token_warnings.append(f"Invalid token: {token}")
+        
     dbi.delete_alert(interpreted["id"])
-    return s.pet_found_spec.response()
+    return s.pet_found_spec.response(warnings=invalid_token_warnings)
 
 @app.route("/pet/alert", methods=["GET", "POST"])
 def alert():
