@@ -21,6 +21,7 @@ class SightingDocument:
         image_url:     ImageURL | None = None,
         chat_id:       str   | None = None,
         timestamp:     datetime.datetime | None = None):
+        contactinfo: str | None = None
         
         self.location_lat = location_lat
         self.location_long = location_long
@@ -36,6 +37,7 @@ class SightingDocument:
         self.image_url = image_url
         self.chat_id = chat_id
         self.timestamp = timestamp
+        self.contactinfo = contactinfo
     
     @staticmethod
     def from_dict(data, generate_timestamp=False):
@@ -54,7 +56,8 @@ class SightingDocument:
             image_url=data.get('image_url'),
             chat_id=data.get('chat_id'),
             timestamp=data.get('timestamp',
-                               datetime.datetime.now(tz=datetime.timezone.utc) if generate_timestamp else None)
+                               datetime.datetime.now(tz=datetime.timezone.utc) if generate_timestamp else None),
+            contactinfo=data.get('contactinfo'),
         ) # Timestamp is rather hacky, but should work.
     
     def to_dict(self, stringify_timestamp=False):
@@ -72,7 +75,8 @@ class SightingDocument:
             'image': self.image,
             'image_url': self.image_url,
             'chat_id': self.chat_id,
-            'timestamp': str(self.timestamp) if stringify_timestamp else self.timestamp
+            'timestamp': str(self.timestamp) if stringify_timestamp else self.timestamp,
+            'contactinfo': self.contactinfo
         }
 
 # Associated with the 'alerts' collection.
