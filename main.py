@@ -19,7 +19,6 @@ app.config["match_function"] = lambda st: st
 app.config["bucket_name"] = "petfinder-424117.appspot.com"
 app.config["not_found_url"] = "https://storage.googleapis.com/petfinder-424117.appspot.com/No_image_available.svg.png"
 
-
 db = firestore.Client(project="petfinder-424117")
 
 dbi = DBInterface(project="petfinder-424117", bucket_name="petfinder-424117.appspot.com")
@@ -53,7 +52,6 @@ def channel():
         "members": [interpreted["chatID1"], interpreted["chatID2"]],
     }).create()
     return s.channel_spec.response()
-    
 
 @app.route("/sighting", methods=["POST"])
 def sighting():
@@ -68,6 +66,13 @@ def sighting():
     
     matched = matcher.match(document, alerts)
     pet_ids = set([m.pet_id for m in matched])
+    
+    if(data.get("expoPushToken") is not None):
+        document.chat_id = data["expoPushToken"]
+    else:
+        document.chat_id = ""
+        
+    
     if "pet_id" in interpreted and interpreted["pet_id"] not in pet_ids:
         match = dbi.get_alert(interpreted["pet_id"], create_if_not_present=False)
         if match is not None:
@@ -80,7 +85,7 @@ def sighting():
             send_push_message(match.push_token, "Sighting Alert",
                               "Your pet has been sighted! Check the app for more details.",
                               {"pet_id": match.pet_id})
-        
+    
     return s.sighting_spec.response({
         "matchN": len(matched),
     })
@@ -91,7 +96,14 @@ def found():
     interpreted, warnings = s.pet_found_spec.interpret_request(data, strict=True)
     if warnings:
         return s.pet_found_spec.response(warnings=warnings)
-    
+    alert = dbi.get_alert(interpreted["id"], create_if_not_present=False)
+    sightings = alert.sightings
+    founded_list = []
+    for sight in sightings:
+        founded_list.append(sight.chat_id)
+    if len(founded_list) != 0:
+        for found in founded_list:
+            send_push_message(found, "You have helped someone reunite with their lost pet. Thank you for your help!", {"pet_id": interpreted["id"]})
     dbi.delete_alert(interpreted["id"])
     return s.pet_found_spec.response()
 
@@ -116,8 +128,11 @@ def alert():
         
         if "sightings" not in interpreted:
             interpreted["sightings"] = []
-            
+        
         document = AlertDocument.from_dict(interpreted)
+        expoPushToken = data.get("expoPushToken")
+        if expoPushToken is not None:
+            document.push_token = expoPushToken
         dbi.set_alert(document)
         return s.pet_alert_spec_post.response()
 

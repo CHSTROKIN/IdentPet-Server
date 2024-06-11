@@ -179,6 +179,7 @@ class DBInterface:
     def set_alert(self, document: AlertDocument):
         self.client.collection('alerts').document(document.pet_id).set(document.to_dict())
     
+    
     def set_pet_images(self, document: PetImagesDocument):
         self.client.collection('pets').document(document.pet_id).set(document.to_dict())
     
@@ -221,6 +222,7 @@ class DBInterface:
         return document
     
     def delete_alert(self, pet_id: PetID):
+        
         self.client.collection('alerts').document(pet_id).delete()
     
     def delete_pet_images(self, pet_id: PetID):
