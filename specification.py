@@ -72,6 +72,7 @@ class Specification:
         for key in response:
             if key not in self.response_fields:
                 wn.warn(f"Response field '{key}' not in specification.")
+                Specification.log_func(self.name, self.endpoint, [f"Response field '{key}' not in specification."])
         
         for key in self.response_fields:
             if key not in response:
@@ -177,7 +178,9 @@ pet_alert_spec_get = Specification(
         "more": str,
         "assistance": permissiveBool,
         "name": str,
-        "sightings": list[SightingDocument]
+        "sightings": list[SightingDocument],
+        "push_token": str,
+        "timestamp": str
     },
     database_map={
         "id": "pet_id"

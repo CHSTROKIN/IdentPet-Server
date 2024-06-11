@@ -4,6 +4,7 @@ import uuid
 
 from enum import Enum
 from typing import TypeAlias
+import datetime
 
 PetID: TypeAlias = str
 CloudFilePath: TypeAlias = str
@@ -18,7 +19,8 @@ class SightingDocument:
         other:         str   | None = None, behaviour:     str   | None = None,
         health:        str   | None = None, image:         CloudFilePath | None = None,
         image_url:     ImageURL | None = None,
-        chat_id:       str   | None = None):
+        chat_id:       str   | None = None,
+        timestamp:     datetime.datetime | None = None):
         
         self.location_lat = location_lat
         self.location_long = location_long
@@ -33,9 +35,10 @@ class SightingDocument:
         self.image = image
         self.image_url = image_url
         self.chat_id = chat_id
+        self.timestamp = timestamp
     
     @staticmethod
-    def from_dict(data):
+    def from_dict(data, generate_timestamp=False):
         return SightingDocument(
             location_lat=data.get('location_lat'),
             location_long=data.get('location_long'),
@@ -49,10 +52,12 @@ class SightingDocument:
             match_with=data.get('match_with'),
             image=data.get('image'),
             image_url=data.get('image_url'),
-            chat_id=data.get('chat_id')
-        )
+            chat_id=data.get('chat_id'),
+            timestamp=data.get('timestamp',
+                               datetime.datetime.now(tz=datetime.timezone.utc) if generate_timestamp else None)
+        ) # Timestamp is rather hacky, but should work.
     
-    def to_dict(self):
+    def to_dict(self, stringify_timestamp=False):
         return {
             'location_lat': self.location_lat,
             'location_long': self.location_long,
@@ -66,7 +71,8 @@ class SightingDocument:
             'match_with': self.match_with,
             'image': self.image,
             'image_url': self.image_url,
-            'chat_id': self.chat_id
+            'chat_id': self.chat_id,
+            'timestamp': str(self.timestamp) if stringify_timestamp else self.timestamp
         }
 
 # Associated with the 'alerts' collection.
@@ -77,7 +83,7 @@ class AlertDocument:
         description:   str   | None = None, assistance:    bool  | None = None, 
         location_lat:  float | None = None, location_long: float | None = None,
         condition:     str   | None = None, more:          str   | None = None,
-        push_token:    str   | None = None
+        push_token:    str   | None = None, timestamp:     datetime.datetime | None = None
         ):
         
         self.pet_id = pet_id
@@ -92,9 +98,10 @@ class AlertDocument:
         self.more = more
         self.sightings = sightings
         self.push_token = push_token
+        self.timestamp = timestamp
     
     @staticmethod
-    def from_dict(data):
+    def from_dict(data, generate_timestamp=False):
         return AlertDocument(
             pet_id=data['pet_id'],
             name=data.get('name'),
@@ -106,11 +113,14 @@ class AlertDocument:
             location_long=data.get('location_long'),
             condition=data.get('condition'),
             more=data.get('more'),
-            sightings=[SightingDocument.from_dict(s) for s in data.get('sightings')],
-            push_token=data.get('push_token')
+            sightings=[SightingDocument.from_dict(
+                s, generate_timestamp=generate_timestamp) for s in data.get('sightings')],
+            push_token=data.get('push_token'),
+            timestamp=data.get('timestamp',
+                               datetime.datetime.now(tz=datetime.timezone.utc) if generate_timestamp else None)
         )
     
-    def to_dict(self):
+    def to_dict(self, stringify_timestamp=False):
         return {
             'pet_id': self.pet_id,
             'name': self.name,
@@ -122,8 +132,9 @@ class AlertDocument:
             'location_long': self.location_long,
             'condition': self.condition,
             'more': self.more,
-            'sightings': [s.to_dict() for s in self.sightings],
-            'push_token': self.push_token
+            'sightings': [s.to_dict(stringify_timestamp=stringify_timestamp) for s in self.sightings],
+            'push_token': self.push_token,
+            'timestamp': str(self.timestamp) if stringify_timestamp else self.timestamp
         }
 
 # Associated with the 'pets' collection.

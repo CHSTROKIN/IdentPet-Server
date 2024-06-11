@@ -60,7 +60,7 @@ def sighting():
     if warnings:
         return s.sighting_spec.response(warnings=warnings)
     
-    document = SightingDocument.from_dict(interpreted)
+    document = SightingDocument.from_dict(interpreted, generate_timestamp=True)
     document = dbi.add_sighting_image(document, data["image"])
     alerts = dbi.list_alerts()
     
@@ -122,7 +122,7 @@ def alert():
         if document is None:
             return s.pet_alert_spec_get.response(warnings=[f"No alert found matching {interpreted['pet_id']}!"], code=404)
         
-        return s.pet_alert_spec_get.response(document.to_dict())
+        return s.pet_alert_spec_get.response(document.to_dict(stringify_timestamp=True))
     else:
         data = request.json
         interpreted, warnings = s.pet_alert_spec_post.interpret_request(data, strict=True)
@@ -132,10 +132,7 @@ def alert():
         if "sightings" not in interpreted:
             interpreted["sightings"] = []
         
-        document = AlertDocument.from_dict(interpreted)
-        expoPushToken = data.get("expoPushToken")
-        if expoPushToken is not None:
-            document.push_token = expoPushToken
+        document = AlertDocument.from_dict(interpreted, generate_timestamp=True)
         dbi.set_alert(document)
         return s.pet_alert_spec_post.response()
 
