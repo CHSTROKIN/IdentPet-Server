@@ -190,7 +190,10 @@ def pet_id():
 @app.route("/pet/images", methods=["GET", "POST"])
 def pet_images():
     if request.method == "GET":
-        images = db.collection("pets").document(request.args.get("id")).get().to_dict().get("images", [])
+        image_doc = db.collection("pets").document(request.args.get("id"))
+        if not image_doc:
+            return make_response(jsonify({}), 404)
+        images = image_doc.get().to_dict().get("images", [])
         image_urls = []
         
         storage_client = storage.Client()
