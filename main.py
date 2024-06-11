@@ -204,13 +204,13 @@ def pet_id():
         db.collection("pets").document(data["id"]).set(data, merge=True)
         return make_response(jsonify({}), 200)
 
-# DEPRECATED: Will stop existing moving forwards, since local storage has taken on this role.
 @app.route("/pet/images", methods=["GET", "POST"])
 def pet_images():
     if request.method == "GET":
         image_doc = db.collection("pets").document(request.args.get("id"))
-        if not image_doc:
-            return make_response(jsonify({}), 404)
+        if not image_doc.get().to_dict():
+            return make_response(jsonify([]), 200)
+        
         images = image_doc.get().to_dict().get("images", [])
         image_urls = []
         
