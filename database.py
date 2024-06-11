@@ -55,11 +55,10 @@ class SightingDocument:
             image=data.get('image'),
             image_url=data.get('image_url'),
             chat_id=data.get('chat_id'),
+            contactinfo=data.get('contactinfo'),
             timestamp=data.get('timestamp',
                                datetime.datetime.now(tz=datetime.timezone.utc) if generate_timestamp else None),
-            contactinfo=data.get('contactinfo'),
         ) # Timestamp is rather hacky, but should work.
-    
     def to_dict(self, stringify_timestamp=False):
         return {
             'location_lat': self.location_lat,
