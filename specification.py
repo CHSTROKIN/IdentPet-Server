@@ -159,6 +159,7 @@ pet_alert_spec_post = Specification(
         "assistance": lambda x: str(x).lower() == "true",
         "name": str,
         "push_token": str,
+        "size": str
     },
 )
 
@@ -180,7 +181,8 @@ pet_alert_spec_get = Specification(
         "name": str,
         "sightings": list[SightingDocument],
         "push_token": str,
-        "timestamp": str
+        "timestamp": str,
+        "size": str,
     },
     database_map={
         "id": "pet_id"
