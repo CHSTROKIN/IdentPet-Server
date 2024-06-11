@@ -83,7 +83,8 @@ class AlertDocument:
         description:   str   | None = None, assistance:    bool  | None = None, 
         location_lat:  float | None = None, location_long: float | None = None,
         condition:     str   | None = None, more:          str   | None = None,
-        push_token:    str   | None = None, timestamp:     datetime.datetime | None = None
+        push_token:    str   | None = None, timestamp:     datetime.datetime | None = None,
+        size:          str   | None = None
         ):
         
         self.pet_id = pet_id
@@ -99,6 +100,7 @@ class AlertDocument:
         self.sightings = sightings
         self.push_token = push_token
         self.timestamp = timestamp
+        self.size = size
     
     @staticmethod
     def from_dict(data, generate_timestamp=False):
@@ -113,6 +115,7 @@ class AlertDocument:
             location_long=data.get('location_long'),
             condition=data.get('condition'),
             more=data.get('more'),
+            size=data.get('size'),
             sightings=[SightingDocument.from_dict(
                 s, generate_timestamp=generate_timestamp) for s in data.get('sightings')],
             push_token=data.get('push_token'),
@@ -134,7 +137,8 @@ class AlertDocument:
             'more': self.more,
             'sightings': [s.to_dict(stringify_timestamp=stringify_timestamp) for s in self.sightings],
             'push_token': self.push_token,
-            'timestamp': str(self.timestamp) if stringify_timestamp else self.timestamp
+            'timestamp': str(self.timestamp) if stringify_timestamp else self.timestamp,
+            'size': self.size
         }
 
 # Associated with the 'pets' collection.
