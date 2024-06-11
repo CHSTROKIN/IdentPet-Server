@@ -20,8 +20,8 @@ class SightingDocument:
         health:        str   | None = None, image:         CloudFilePath | None = None,
         image_url:     ImageURL | None = None,
         chat_id:       str   | None = None,
+        contactinfo:   str | None = None,
         timestamp:     datetime.datetime | None = None):
-        contactinfo: str | None = None
         
         self.location_lat = location_lat
         self.location_long = location_long
