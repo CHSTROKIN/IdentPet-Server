@@ -61,6 +61,7 @@ class SpoofMatcher:
 
 class AIMatcher(SpoofMatcher):
     def __init__(self, nearestK: int = 5, match_mode: SpoofMatch = SpoofMatch.ALWAYS, target_mode: SpoofTarget = SpoofTarget.ALL):
+        super().__init__(match_mode, target_mode)
         self.nearestK = nearestK
         self.match_mode: SpoofMatch = match_mode
         self.target_mode: SpoofTarget = target_mode
@@ -83,7 +84,6 @@ class AIMatcher(SpoofMatcher):
         similarity_alerts.sort(key=lambda x: x[1], reverse=True)
         
         return [alert for alert, similarity in similarity_alerts[:topK]]
-    
 if __name__ == '__init__':
     alerts = []
     pass

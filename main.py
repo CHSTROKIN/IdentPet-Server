@@ -26,8 +26,8 @@ app.config["not_found_url"] = "https://storage.googleapis.com/petfinder-424117.a
 db = firestore.Client(project="petfinder-424117")
 
 dbi = DBInterface(project="petfinder-424117", bucket_name="petfinder-424117.appspot.com")
-# matcher: SpoofMatcher = SpoofMatcher(SpoofMatch.ALWAYS, SpoofTarget.ALL)
-matcher: SpoofMatcher = AIMatcher(5, SpoofMatch.ALWAYS, SpoofTarget.ALL)
+matcher: SpoofMatcher = SpoofMatcher(SpoofMatch.ALWAYS, SpoofTarget.ALL)
+# matcher: SpoofMatcher = AIMatcher(5, SpoofMatch.ALWAYS, SpoofTarget.ALL)
 server_client = StreamChat(api_key="cecspa2wrfyy", api_secret="r4fq35udvu87ekgawu6t3mhx92pdq5sas24npgujxj9hp3gwzah49x5gc86bqqkx")
 
 logs: list[tuple[str, str, str]] = []
@@ -306,6 +306,10 @@ def debug_match():
             matcher.target_mode = SpoofTarget.FIRST
         elif mode == "random":
             matcher.target_mode = SpoofTarget.RANDOM
+        elif mode == "reset":
+            matcher = SpoofMatcher(SpoofMatch.ALWAYS, SpoofTarget.ALL)
+        elif mode == "ai":
+            matcher = AIMatcher(5, SpoofMatch.ALWAYS, SpoofTarget.ALL)
         else:
             return make_response("Invalid mode.", 400)
         return redirect(url_for("debug"))
