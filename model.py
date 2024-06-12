@@ -132,13 +132,13 @@ def init_model():
     model.to(CONFIG['device'])
     model.eval()
     return model
-
+main_model = init_model()
 @torch.inference_mode()
 def embed_image_from_url(url: str):
     image = Image.load_from_file(url)
     input_image = torch.tensor(image.image_data).to(CONFIG['device'])
     resized_image = F.interpolate(input_image, size=(CONFIG['img_size'], CONFIG['img_size']))
-    embeddings = model.extract(resized_image)   
+    embeddings = main_model.extract(resized_image)   
     return (embeddings)
 @torch.inference_mode()
 def test_inference():
