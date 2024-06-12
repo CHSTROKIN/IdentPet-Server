@@ -285,6 +285,7 @@ def debug_doc(endpoint):
 
 @app.route("/debug/match", methods=["GET"])
 def debug_match():
+    global matcher
     if app.config["DEBUG"]:
         mode = request.args.get("mode")
         if mode == "always":
