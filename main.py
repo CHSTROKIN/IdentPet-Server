@@ -96,6 +96,7 @@ def found():
     
     alert = dbi.get_alert(interpreted["id"], create_if_not_present=False)
     push_tokens = [s.chat_id for s in alert.sightings if valid_token(s.chat_id)]
+    push_tokens = list(set(push_tokens))
     
     invalid_token_warnings = []
     for token in push_tokens:
