@@ -114,6 +114,7 @@ sighting_spec = Specification(
         "id": str,
         "chatID": str,
         "contactinfo": str,
+        "message": str,
     },
     database_map={
         "specificLocation": "location_desc",
@@ -184,7 +185,8 @@ pet_alert_spec_get = Specification(
         "push_token": str,
         "timestamp": str,
         "size": str,
-        "contactinfo": str
+        "contactinfo": str,
+        "message": str
     },
     database_map={
         "id": "pet_id"
