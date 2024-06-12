@@ -1,8 +1,8 @@
-# import vertexai # type: ignore
+import vertexai # type: ignore
 # from vertexai.vision_models import Image, MultiModalEmbeddingModel # type: ignore
 # from google.cloud.firestore_v1.vector import Vector # type: ignore
 
-# vertexai.init(project="petfinder-424117")
+vertexai.init(project="petfinder-424117")
 # model = MultiModalEmbeddingModel.from_pretrained("multimodalembedding")
 import torch
 import torch.nn as nn
@@ -11,7 +11,7 @@ import timm
 from vertexai.vision_models import Image
 import math
 import time 
-PATH = "./Loss6.0087_epoch10.bin"
+PATH = "Loss6.0087_epoch10.bin"
 CONFIG = {"seed": 2022,
           "epochs": 4,
           "img_size": 448,
@@ -128,8 +128,9 @@ class DogImageModel(nn.Module):
     
 def init_model():
     model = DogImageModel(CONFIG['model_name'], CONFIG['embedding_size'])
-    model.load_state_dict(torch.load(PATH))
+    model.load_state_dict(torch.load(PATH), map_location=torch.device(CONFIG["device"])
     model.to(CONFIG['device'])
+    
     model.eval()
     return model
 main_model = init_model()
