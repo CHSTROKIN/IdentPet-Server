@@ -9,10 +9,8 @@ from stream_chat import StreamChat
 from database import DBInterface, SightingDocument, AlertDocument
 from specification import post_specifications_by_endpoint
 import specification as s
-from matcher import SpoofMatch, SpoofTarget, SpoofMatcher
+from matcher import SpoofMatch, SpoofTarget, SpoofMatcher, AIMatcher
 from notification import send_push_message
-from model import init_model
-from matcher import AIMatcher
 
 from locations import points_within_radius
 
@@ -36,7 +34,6 @@ def log(endpoint, method, messages):
         logs.append((endpoint, method, message))
 
 s.Specification.log_func = log
-model = init_model()
 @app.route("/", methods=["GET"])
 def index():
     return "Hello, World!"
