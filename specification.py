@@ -114,6 +114,7 @@ sighting_spec = Specification(
         "id": str,
         "chatID": str,
         "contactinfo": str,
+        "message": str,
     },
     database_map={
         "specificLocation": "location_desc",
