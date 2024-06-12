@@ -27,7 +27,7 @@ CONFIG = {"seed": 2022,
           "weight_decay": 1e-6,
           "n_fold": 5,
           "n_accumulate": 1,
-          "device": "cuda",
+          "device": "cpu",
           # ArcFace Hyperparameters
           "s": 30.0, 
           "m": 0.50,
