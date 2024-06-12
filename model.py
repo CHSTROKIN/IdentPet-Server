@@ -140,7 +140,9 @@ def init_model():
 main_model = init_model()
 @torch.inference_mode()
 def embed_image_from_url(url: str):
-    image = Image.load_from_file(url)
+    image = Image.load_from_file(url)._pil_image()
+    if(image == None):
+        return torch.zeros(1, 512)
     transform = transforms.Compose([ 
         transforms.ToTensor(),
         transforms.Resize((448, 448))
