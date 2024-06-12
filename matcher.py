@@ -19,6 +19,8 @@ class SpoofTarget(Enum):
     ONE = 1
     RANDOM = 2
     ALL = 3
+    
+DIMENSION = 512
 
 class MatcherProtocol(Protocol):
     def match(self, sighting: SightingDocument, alerts: list[AlertDocument]) -> list[AlertDocument]:
@@ -70,8 +72,8 @@ class AIMatcher(SpoofMatcher):
     def distance(self, a: SightingDocument, b:AlertDocument) -> float:
         x = a.to_dict()["location_lat"]
         y = a.to_dict()["location_long"]
-        x1 = a.to_dict()["location_lat"]
-        y1 = a.to_dict()["location_long"]
+        x1 = b.to_dict()["location_lat"]
+        y1 = b.to_dict()["location_long"]
         return math.sqrt((x1-x)**2 + (y1-y)**2)
     def match(self, sighting: SightingDocument, alerts: list[AlertDocument]) -> list[AlertDocument]:
         topK = self.nearestK
