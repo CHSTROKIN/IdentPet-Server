@@ -128,9 +128,9 @@ class DogImageModel(nn.Module):
     
 def init_model():
     model = DogImageModel(CONFIG['model_name'], CONFIG['embedding_size'])
-    model.load_state_dict(torch.load(PATH), map_location=torch.device(CONFIG["device"])
+    model.load_state_dict(torch.load(PATH, map_location=torch.device(CONFIG["device"])))
     model.to(CONFIG['device'])
-    
+
     model.eval()
     return model
 main_model = init_model()
@@ -146,6 +146,6 @@ def test_inference():
     model = init_model()
     input_image = torch.randn(1, 3, 448, 448).to(CONFIG['device'])
     return model.extract(input_image)
-# if __name__ =='__main__':
-#     test_inference()
-#     print('Model is loaded successfully')
+if __name__ =='__main__':
+    test_inference()
+    print('Model is loaded successfully')
