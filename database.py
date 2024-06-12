@@ -19,6 +19,7 @@ class SightingDocument:
         other:         str   | None = None, behaviour:     str   | None = None,
         health:        str   | None = None, image:         CloudFilePath | None = None,
         image_url:     ImageURL | None = None,
+        message:       str | None = None,
         chat_id:       str   | None = None,
         timestamp:     datetime.datetime | None = None):
         
@@ -36,6 +37,7 @@ class SightingDocument:
         self.image_url = image_url
         self.chat_id = chat_id
         self.timestamp = timestamp
+        self.message = message
     
     @staticmethod
     def from_dict(data, generate_timestamp=False):
@@ -53,6 +55,7 @@ class SightingDocument:
             image=data.get('image'),
             image_url=data.get('image_url'),
             chat_id=data.get('chat_id'),
+            message=data.get('message'),
             timestamp=data.get('timestamp',
                                datetime.datetime.now(tz=datetime.timezone.utc) if generate_timestamp else None)
         ) # Timestamp is rather hacky, but should work.
@@ -72,6 +75,7 @@ class SightingDocument:
             'image': self.image,
             'image_url': self.image_url,
             'chat_id': self.chat_id,
+            'message': self.message,
             'timestamp': str(self.timestamp) if stringify_timestamp else self.timestamp
         }
 
