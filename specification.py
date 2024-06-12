@@ -185,7 +185,8 @@ pet_alert_spec_get = Specification(
         "push_token": str,
         "timestamp": str,
         "size": str,
-        "contactinfo": str
+        "contactinfo": str,
+        "message": str
     },
     database_map={
         "id": "pet_id"
