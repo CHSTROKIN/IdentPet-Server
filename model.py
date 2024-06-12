@@ -11,7 +11,7 @@ import timm
 from vertexai.vision_models import Image
 import math
 import time 
-PATH = "/home/chsto/pet/petfinder-server/Loss6.0087_epoch10.bin"
+PATH = "./Loss6.0087_epoch10.bin"
 CONFIG = {"seed": 2022,
           "epochs": 4,
           "img_size": 448,
@@ -142,5 +142,9 @@ def embed_image_from_url(url: str):
     return (embeddings)
 @torch.inference_mode()
 def test_inference():
+    model = init_model()
     input_image = torch.randn(1, 3, 448, 448).to(CONFIG['device'])
     return model.extract(input_image)
+# if __name__ =='__main__':
+#     test_inference()
+#     print('Model is loaded successfully')
