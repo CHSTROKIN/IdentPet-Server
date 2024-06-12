@@ -194,6 +194,23 @@ pet_alert_spec_get = Specification(
     }
 )
 
+pet_nearby_spec_get = Specification(
+    "Get Nearby Alerts",
+    "/pet/nearby",
+    "Gets alerts that are nearby the provided location.",
+    method="GET",
+    required_fields={
+        "location_lat": permissiveFloat,
+        "location_long": permissiveFloat
+    },
+    optional_fields={
+        "radius": permissiveFloat
+    },
+    response_fields={
+        "alerts": list[AlertDocument]
+    }
+)
+
 channel_spec = Specification(
     "Create a New Channel",
     "/channel",

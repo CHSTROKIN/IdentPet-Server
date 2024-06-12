@@ -11,6 +11,7 @@ from specification import post_specifications_by_endpoint
 import specification as s
 from matcher import SpoofMatch, SpoofTarget, SpoofMatcher
 from notification import send_push_message
+from locations import points_within_radius
 
 app = Flask(__name__)
 app.config["DEBUG"] = True
@@ -179,13 +180,26 @@ def my_pets():
 # https://stackoverflow.com/questions/46454496/how-to-determine-if-a-google-cloud-storage-blob-is-marked-share-publicly
 @app.route("/pet/nearby", methods=["GET"])
 def pet():
+    data = request.args.to_dict(flat=True)
+    interpreted, warnings = s.pet_nearby_spec_get.interpret_request(data, strict=True)
+    if warnings:
+        return s.pet_nearby_spec_get.response(warnings=warnings)
+    
     pet_data = [p.to_dict() for p in dbi.list_alerts()]
+    
+    points = [(p["location_lat"], p["location_long"]) for p in pet_data]
+    radius = interpreted.get("radius", 30.)
+    center = (interpreted["location_lat"], interpreted["location_long"])
+    
+    pet_data = points_within_radius(center, points, pet_data, radius)
+    
     for data in pet_data:
         urls = dbi.get_pet_images(data["pet_id"], create_if_not_present=True).image_urls
         if len(urls) == 0:
             data["image"] = app.config["not_found_url"]
         else:
             data["image"] = urls[0]
+            
     return make_response(jsonify(pet_data), 200)
 
 # DEPRECATED: Will stop existing moving forwards, since local storage has taken on this role.
