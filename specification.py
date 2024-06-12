@@ -113,6 +113,7 @@ sighting_spec = Specification(
         "image": str,
         "id": str,
         "chatID": str,
+        "contactinfo": str,
     },
     database_map={
         "specificLocation": "location_desc",
@@ -183,6 +184,7 @@ pet_alert_spec_get = Specification(
         "push_token": str,
         "timestamp": str,
         "size": str,
+        "contactinfo": str
     },
     database_map={
         "id": "pet_id"

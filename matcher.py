@@ -18,7 +18,7 @@ class SpoofTarget(Enum):
 class MatcherProtocol(Protocol):
     def match(self, sighting: SightingDocument, alerts: list[AlertDocument]) -> list[AlertDocument]:
         ...
-
+        
 class SpoofMatcher:
     def __init__(self, match_mode: SpoofMatch, target_mode: SpoofTarget):
         self.match_mode: SpoofMatch = match_mode

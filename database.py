@@ -1,10 +1,13 @@
 from google.cloud import storage    # type: ignore
-from google.cloud import firestore
+from google.cloud import firestore  # type: ignore
 import uuid
 
 from enum import Enum
 from typing import TypeAlias
 import datetime
+
+from model import embed_image_from_url
+from google.cloud.firestore_v1.vector import Vector # type: ignore
 
 PetID: TypeAlias = str
 CloudFilePath: TypeAlias = str
@@ -21,7 +24,9 @@ class SightingDocument:
         image_url:     ImageURL | None = None,
         message:       str | None = None,
         chat_id:       str   | None = None,
-        timestamp:     datetime.datetime | None = None):
+        contactinfo:   str | None = None,
+        timestamp:     datetime.datetime | None = None,
+        embedding:     Vector | None = None):
         
         self.location_lat = location_lat
         self.location_long = location_long
@@ -38,6 +43,8 @@ class SightingDocument:
         self.chat_id = chat_id
         self.timestamp = timestamp
         self.message = message
+        self.contactinfo = contactinfo
+        self.embedding = embedding
     
     @staticmethod
     def from_dict(data, generate_timestamp=False):
@@ -56,10 +63,11 @@ class SightingDocument:
             image_url=data.get('image_url'),
             chat_id=data.get('chat_id'),
             message=data.get('message'),
+            contactinfo=data.get('contactinfo'),
             timestamp=data.get('timestamp',
-                               datetime.datetime.now(tz=datetime.timezone.utc) if generate_timestamp else None)
+                               datetime.datetime.now(tz=datetime.timezone.utc) if generate_timestamp else None),
+            embedding=data.get('embedding')
         ) # Timestamp is rather hacky, but should work.
-    
     def to_dict(self, stringify_timestamp=False):
         return {
             'location_lat': self.location_lat,
@@ -76,7 +84,9 @@ class SightingDocument:
             'image_url': self.image_url,
             'chat_id': self.chat_id,
             'message': self.message,
-            'timestamp': str(self.timestamp) if stringify_timestamp else self.timestamp
+            'timestamp': str(self.timestamp) if stringify_timestamp else self.timestamp,
+            'contactinfo': self.contactinfo,
+            'embedding': self.embedding
         }
 
 # Associated with the 'alerts' collection.
@@ -88,7 +98,7 @@ class AlertDocument:
         location_lat:  float | None = None, location_long: float | None = None,
         condition:     str   | None = None, more:          str   | None = None,
         push_token:    str   | None = None, timestamp:     datetime.datetime | None = None,
-        size:          str   | None = None
+        size:          str   | None = None,
         ):
         
         self.pet_id = pet_id
@@ -124,7 +134,7 @@ class AlertDocument:
                 s, generate_timestamp=generate_timestamp) for s in data.get('sightings')],
             push_token=data.get('push_token'),
             timestamp=data.get('timestamp',
-                               datetime.datetime.now(tz=datetime.timezone.utc) if generate_timestamp else None)
+                               datetime.datetime.now(tz=datetime.timezone.utc) if generate_timestamp else None),
         )
     
     def to_dict(self, stringify_timestamp=False):
@@ -142,29 +152,33 @@ class AlertDocument:
             'sightings': [s.to_dict(stringify_timestamp=stringify_timestamp) for s in self.sightings],
             'push_token': self.push_token,
             'timestamp': str(self.timestamp) if stringify_timestamp else self.timestamp,
-            'size': self.size
+            'size': self.size,
         }
 
 # Associated with the 'pets' collection.
 class PetImagesDocument:
-    def __init__(self, pet_id: str, images: list[CloudFilePath], image_urls: list[ImageURL]):
+    def __init__(self, pet_id: str, images: list[CloudFilePath], image_urls: list[ImageURL],
+                 embedding: Vector | None = None):
         self.pet_id = pet_id
         self.images = images
         self.image_urls = image_urls
+        self.embedding = embedding
     
     @staticmethod
     def from_dict(data):
         return PetImagesDocument(
             pet_id=data['pet_id'],
             images=data['images'],
-            image_urls=data['image_urls']
+            image_urls=data['image_urls'],
+            embedding=data.get('embedding')
         )
     
     def to_dict(self):
         return {
             'pet_id': self.pet_id,
             'images': self.images,
-            'image_urls': self.image_urls
+            'image_urls': self.image_urls,
+            'embedding': self.embedding
         }
 
 # A 'None' is always 'Any' for verification purposes.
@@ -228,12 +242,14 @@ class DBInterface:
         url = self.publish_image(image)
         document.images.append(image)
         document.image_urls.append(url)
+        document.embedding = embed_image_from_url(url)
         return document
     
     def add_sighting_image(self, document: SightingDocument, image: CloudFilePath) -> SightingDocument:
         document.image = image
         url = self.publish_image(image)
         document.image_url = url
+        document.embedding = embed_image_from_url(url)
         return document
     
     def add_sighting(self, document: AlertDocument, sighting: SightingDocument) -> AlertDocument:
