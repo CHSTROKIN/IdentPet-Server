@@ -146,6 +146,6 @@ def test_inference():
     model = init_model()
     input_image = torch.randn(1, 3, 448, 448).to(CONFIG['device'])
     return model.extract(input_image)
-if __name__ =='__main__':
-    test_inference()
-    print('Model is loaded successfully')
+# if __name__ =='__main__':
+#     test_inference()
+#     print('Model is loaded successfully')
