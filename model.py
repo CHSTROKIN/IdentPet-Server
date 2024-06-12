@@ -140,7 +140,7 @@ def init_model():
 main_model = init_model()
 @torch.inference_mode()
 def embed_image_from_url(url: str):
-    image = Image.load_from_file(url)._pil_image()
+    image = Image.load_from_file(url)._pil_image
     if(image == None):
         return torch.zeros(1, 512)
     transform = transforms.Compose([ 
@@ -152,17 +152,17 @@ def embed_image_from_url(url: str):
     resized_image = input_image.unsqueeze(0)
     embeddings = main_model.extract(resized_image)   
     return (embeddings)
-@torch.inference_mode()
-def test_inference():
-    model = init_model()
-    input_image = Image.open('t1.jpg')
-    transform = transforms.Compose([ 
-        transforms.ToTensor(),
-        transforms.Resize((448, 448))
-    ]) 
-    input_image = transform(input_image)
-    # print(input_image.shape)
-    resized_image = input_image.unsqueeze(0)
+# @torch.inference_mode()
+# def test_inference():
+#     model = init_model()
+#     input_image = Image.open('t1.jpg')
+#     transform = transforms.Compose([ 
+#         transforms.ToTensor(),
+#         transforms.Resize((448, 448))
+#     ]) 
+#     input_image = transform(input_image)
+#     # print(input_image.shape)
+#     resized_image = input_image.unsqueeze(0)
     return model.extract(resized_image)
 # if __name__ =='__main__':
 #     print(test_inference().shape)
