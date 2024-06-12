@@ -6,6 +6,7 @@ vertexai.init(project="petfinder-424117")
 model = MultiModalEmbeddingModel.from_pretrained("multimodalembedding")
 
 def embed_image_from_url(url: str) -> Vector:
-    image = Image.load_from_file(url)
-    embeddings = model.get_embeddings(image=image, dimension=512)
-    return Vector(embeddings.image_embedding)
+    return None 
+    # image = Image.load_from_file(url)
+    # embeddings = model.get_embeddings(image=image, dimension=512)
+    # return Vector(embeddings.image_embedding)
