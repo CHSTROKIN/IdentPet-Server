@@ -144,12 +144,3 @@ def embed_image_from_url(url: str):
 def test_inference():
     input_image = torch.randn(1, 3, 448, 448).to(CONFIG['device'])
     return model.extract(input_image)
-if __name__ == '__main__':
-    t1 = time.time()
-    model = init_model()
-    t2  = time.time()
-    print(t2-t1)
-    t1 = time.time()
-    test_inference()
-    t2 = time.time()
-    print(t2-t1)

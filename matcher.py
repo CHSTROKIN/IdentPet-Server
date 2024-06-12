@@ -84,6 +84,3 @@ class AIMatcher(SpoofMatcher):
         similarity_alerts.sort(key=lambda x: x[1], reverse=True)
         
         return [alert for alert, similarity in similarity_alerts[:topK]]
-if __name__ == '__init__':
-    alerts = []
-    pass
