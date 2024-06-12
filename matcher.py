@@ -2,6 +2,11 @@ import random
 from enum import Enum
 from typing import Protocol
 from database import SightingDocument, AlertDocument
+import math 
+import torch
+import torch.nn as nn
+import torch.nn.functional as F
+import time 
 
 class SpoofMatch(Enum):
     NEVER = 0
@@ -53,3 +58,29 @@ class SpoofMatcher:
             targets.extend(alerts)
         
         return targets
+
+class AIMatcher(SpoofMatcher):
+    def __init__(self, nearestK: int = 5, match_mode: SpoofMatch = SpoofMatch.ALWAYS, target_mode: SpoofTarget = SpoofTarget.ALL):
+        self.nearestK = nearestK
+        self.match_mode: SpoofMatch = match_mode
+        self.target_mode: SpoofTarget = target_mode
+        self.cos = nn.CosineSimilarity(dim = DIMENSION, eps=1e-6)
+        self.disFactor = 0.03
+    def distance(self, a: SightingDocument, b:AlertDocument) -> float:
+        x = a.to_dict()["location_lat"]
+        y = a.to_dict()["location_long"]
+        x1 = a.to_dict()["location_lat"]
+        y1 = a.to_dict()["location_long"]
+        return math.sqrt((x1-x)**2 + (y1-y)**2)
+    def match(self, sighting: SightingDocument, alerts: list[AlertDocument]) -> list[AlertDocument]:
+        if(len(alerts) == 0):
+            return []
+        similarity_alerts = [(alert, self.cos(alert.to_dict()["embedding"], sighting.to_dict()["embedding"])) for alert in alerts]
+        similarity_alerts = [(alert, similarity * (self.disFactor)/(self.distance(sighting, alert))) for alert, similarity in similarity_alerts]
+        similarity_alerts.sort(key=lambda x: x[1], reverse=True)
+        
+        return [alert for alert, similarity in similarity_alerts[:self.nearestK]]
+    
+if __name__ == '__init__':
+    alerts = []
+    pass

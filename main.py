@@ -11,6 +11,10 @@ from specification import post_specifications_by_endpoint
 import specification as s
 from matcher import SpoofMatch, SpoofTarget, SpoofMatcher
 from notification import send_push_message
+import faiss 
+from model import init_model
+from matcher import AIMatcher
+
 from locations import points_within_radius
 
 app = Flask(__name__)
@@ -23,7 +27,8 @@ app.config["not_found_url"] = "https://storage.googleapis.com/petfinder-424117.a
 db = firestore.Client(project="petfinder-424117")
 
 dbi = DBInterface(project="petfinder-424117", bucket_name="petfinder-424117.appspot.com")
-matcher: SpoofMatcher = SpoofMatcher(SpoofMatch.ALWAYS, SpoofTarget.ALL)
+# matcher: SpoofMatcher = SpoofMatcher(SpoofMatch.ALWAYS, SpoofTarget.ALL)
+matcher: SpoofMatcher = AIMatcher(5, SpoofMatch.ALWAYS, SpoofTarget.ALL)
 server_client = StreamChat(api_key="cecspa2wrfyy", api_secret="r4fq35udvu87ekgawu6t3mhx92pdq5sas24npgujxj9hp3gwzah49x5gc86bqqkx")
 
 logs: list[tuple[str, str, str]] = []
@@ -32,7 +37,7 @@ def log(endpoint, method, messages):
         logs.append((endpoint, method, message))
 
 s.Specification.log_func = log
-
+model = init_model()
 @app.route("/", methods=["GET"])
 def index():
     return "Hello, World!"
@@ -66,6 +71,7 @@ def sighting():
     alerts = dbi.list_alerts()
     
     matched = matcher.match(document, alerts)
+    
     pet_ids = set([m.pet_id for m in matched])
     
     if "pet_id" in interpreted and interpreted["pet_id"] not in pet_ids:
