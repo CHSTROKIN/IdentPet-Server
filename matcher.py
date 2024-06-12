@@ -73,13 +73,16 @@ class AIMatcher(SpoofMatcher):
         y1 = a.to_dict()["location_long"]
         return math.sqrt((x1-x)**2 + (y1-y)**2)
     def match(self, sighting: SightingDocument, alerts: list[AlertDocument]) -> list[AlertDocument]:
+        topK = self.nearestK
+        if(len(alerts) <= self.nearestK):
+            topK = 1
         if(len(alerts) == 0):
             return []
         similarity_alerts = [(alert, self.cos(alert.to_dict()["embedding"], sighting.to_dict()["embedding"])) for alert in alerts]
         similarity_alerts = [(alert, similarity * (self.disFactor)/(self.distance(sighting, alert))) for alert, similarity in similarity_alerts]
         similarity_alerts.sort(key=lambda x: x[1], reverse=True)
         
-        return [alert for alert, similarity in similarity_alerts[:self.nearestK]]
+        return [alert for alert, similarity in similarity_alerts[:topK]]
     
 if __name__ == '__init__':
     alerts = []
