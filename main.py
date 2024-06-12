@@ -307,7 +307,7 @@ def debug_match():
         elif mode == "reset":
             matcher = SpoofMatcher(SpoofMatch.ALWAYS, SpoofTarget.ALL)
         elif mode == "ai":
-            matcher = AIMatcher(5, SpoofMatch.ALWAYS, SpoofTarget.ALL)
+            matcher = AIMatcher()
         else:
             return make_response("Invalid mode.", 400)
         return redirect(url_for("debug"))

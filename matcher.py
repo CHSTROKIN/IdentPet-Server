@@ -13,12 +13,13 @@ class SpoofMatch(Enum):
     HALF = 1
     ALTERNATING = 2
     ALWAYS = 3
-
+    AI = 4
 class SpoofTarget(Enum):
     FIRST = 0
     ONE = 1
     RANDOM = 2
     ALL = 3
+    AI = 4
     
 DIMENSION = 512
 
@@ -62,7 +63,7 @@ class SpoofMatcher:
         return targets
 
 class AIMatcher(SpoofMatcher):
-    def __init__(self, nearestK: int = 5, match_mode: SpoofMatch = SpoofMatch.ALWAYS, target_mode: SpoofTarget = SpoofTarget.ALL):
+    def __init__(self, nearestK: int = 5, match_mode: SpoofMatch = SpoofMatch.AI, target_mode: SpoofTarget = SpoofTarget.AI):
         super().__init__(match_mode, target_mode)
         self.nearestK = nearestK
         self.match_mode: SpoofMatch = match_mode
