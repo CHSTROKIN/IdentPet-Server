@@ -11,7 +11,6 @@ from specification import post_specifications_by_endpoint
 import specification as s
 from matcher import SpoofMatch, SpoofTarget, SpoofMatcher
 from notification import send_push_message
-import faiss 
 from model import init_model
 from matcher import AIMatcher
 
