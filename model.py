@@ -8,9 +8,13 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import timm
-from vertexai.vision_models import Image
+# from vertexai.vision_models import Image
+from PIL import Image 
 import math
+import torchvision.transforms as transforms
 import time 
+import cv2 
+
 PATH = "Loss6.0087_epoch10.bin"
 CONFIG = {"seed": 2022,
           "epochs": 4,
@@ -137,15 +141,27 @@ main_model = init_model()
 @torch.inference_mode()
 def embed_image_from_url(url: str):
     image = Image.load_from_file(url)
-    input_image = torch.tensor(image.image_data).to(CONFIG['device'])
-    resized_image = F.interpolate(input_image, size=(CONFIG['img_size'], CONFIG['img_size']))
+    transform = transforms.Compose([ 
+        transforms.ToTensor(),
+        transforms.Resize((448, 448))
+    ]) 
+    image = transform(image)
+    input_image = torch.tensor(image).to(CONFIG['device'])
+    resized_image = input_image.unsqueeze(0)
     embeddings = main_model.extract(resized_image)   
     return (embeddings)
 @torch.inference_mode()
 def test_inference():
     model = init_model()
-    input_image = torch.randn(1, 3, 448, 448).to(CONFIG['device'])
-    return model.extract(input_image)
+    input_image = Image.open('t1.jpg')
+    transform = transforms.Compose([ 
+        transforms.ToTensor(),
+        transforms.Resize((448, 448))
+    ]) 
+    input_image = transform(input_image)
+    # print(input_image.shape)
+    resized_image = input_image.unsqueeze(0)
+    return model.extract(resized_image)
 # if __name__ =='__main__':
-#     test_inference()
+#     print(test_inference().shape)
 #     print('Model is loaded successfully')

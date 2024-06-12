@@ -67,7 +67,7 @@ class AIMatcher(SpoofMatcher):
         self.nearestK = nearestK
         self.match_mode: SpoofMatch = match_mode
         self.target_mode: SpoofTarget = target_mode
-        self.cos = nn.CosineSimilarity(dim = DIMENSION, eps=1e-6)
+        self.cos = nn.CosineSimilarity(dim = 1, eps=1e-6)
         self.disFactor = 0.03
     def distance(self, a: SightingDocument, b:AlertDocument) -> float:
         x = a.to_dict()["location_lat"]
@@ -86,3 +86,5 @@ class AIMatcher(SpoofMatcher):
         similarity_alerts.sort(key=lambda x: x[1], reverse=True)
         
         return [alert for alert, similarity in similarity_alerts[:topK]]
+if __name__ == '__main__':
+    pass
