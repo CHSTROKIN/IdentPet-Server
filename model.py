@@ -8,8 +8,8 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import timm
-# from vertexai.vision_models import Image
-from PIL import Image 
+from vertexai.vision_models import Image
+# from PIL import Image 
 import math
 import torchvision.transforms as transforms
 import time 
