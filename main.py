@@ -94,7 +94,7 @@ def sighting():
     
     
     log("sighting","POST", [f"matched are2 {matched}"])
-    log("sighting","POST", [f"matchedN is {len(matched)}"]
+    log("sighting","POST", [f"matchedN is {len(matched)}"])
     return s.sighting_spec.response({
         "matchN": len(matched),
     })
