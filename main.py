@@ -58,38 +58,43 @@ def channel():
 @app.route("/sighting", methods=["POST"])
 def sighting():
     data = request.json
-    log("sighting", "POST","Sighting begin")
+    log("sighting", "POST",["Sighting begin"])
     interpreted, warnings = s.sighting_spec.interpret_request(data, strict=True)
     if warnings:
-        log("sighting","POST", "Warnings found in request")
+        log("sighting","POST", ["Warnings found in request"])
         return s.sighting_spec.response(warnings=warnings)
     
     document = SightingDocument.from_dict(interpreted, generate_timestamp=True)
 
-    log("sighting","POST", f"document is {document.to_dict()}")
+    log("sighting","POST", [f"document is {document.to_dict()}"])
         
     document = dbi.add_sighting_image(document, data["image"])
     alerts = dbi.list_alerts()
-    log("sighting","POST", f"alerts are {alerts}")
+    log("sighting","POST", [f"alerts are {alerts}"])
     
     matched = matcher.match(document, alerts)
     
     pet_ids = set([m.pet_id for m in matched])
-    log("sighting","POST", f"matched are {matched}")
-    log("sighting", "POST",f"pet_ids are {pet_ids}")
+    log("sighting","POST", [f"matched are {matched}"])
+    log("sighting", "POST",[f"pet_ids are {pet_ids}"])
     if "pet_id" in interpreted and interpreted["pet_id"] not in pet_ids:
         match = dbi.get_alert(interpreted["pet_id"], create_if_not_present=False)
         if match is not None:
             matched.append(match)
-    
+    log("sighting","POST", [f"matched are {matched}"])
     for match in matched:
         dbi.add_sighting(match, document)
         dbi.set_alert(match)
+        log("sighting","POST", [f"match is {match}"])
+        log("sighting","POST", [f"match.push_token is {match.push_token}"])
         if match.push_token is not None:
             send_push_message(match.push_token, "Sighting Alert",
                               "Your pet has been sighted! Check the app for more details.",
                               {"pet_id": match.pet_id})
     
+    
+    log("sighting","POST", [f"matched are2 {matched}"])
+    log("sighting","POST", [f"matchedN is {len(matched)}"]
     return s.sighting_spec.response({
         "matchN": len(matched),
     })
@@ -100,21 +105,21 @@ def valid_token(token: str):
 @app.route("/pet/found", methods=["POST"])
 def found():
     data = request.json
-    log("pet/found", "POST", f"Data is {data}")
+    log("pet/found", "POST", [f"Data is {data}"])
     
     interpreted, warnings = s.pet_found_spec.interpret_request(data, strict=True)
-    log("pet/found", "POST", f"interpreted is {interpreted}")
-    log("pet/found", "POST", f"warnings are {warnings}")
+    log("pet/found", "POST", [f"interpreted is {interpreted}"])
+    log("pet/found", "POST", [f"warnings are {warnings}"])
     if warnings:
         return s.pet_found_spec.response(warnings=warnings)
     
     alert = dbi.get_alert(interpreted["id"], create_if_not_present=False)
     invalid_token_warnings = []
-    log("pet/found", "POST", f"alert is {alert}")
+    log("pet/found", "POST", [f"alert is {alert}"])
     
     push_tokens = [s.chat_id for s in alert.sightings if valid_token(s.chat_id)]
     push_tokens = list(set(push_tokens))
-    log("pet/found", "POST", f"push_tokens are {push_tokens}")
+    log("pet/found", "POST", [f"push_tokens are {push_tokens}"])
     for token in push_tokens:
         try:
             send_push_message(token,
