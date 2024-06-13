@@ -139,19 +139,20 @@ def init_model():
 main_model = init_model()
 @torch.inference_mode()
 def embed_image_from_url(url: str):
-    image = Image.load_from_file(url)._pil_image
-    if(image == None):
-        return torch.zeros(1, 512)
-    transform = transforms.Compose([ 
-        transforms.ToTensor(),
-        transforms.Resize((448, 448))
-    ]) 
-    image = transform(image)
-    input_image = torch.tensor(image).to(CONFIG['device'])
-    resized_image = input_image.unsqueeze(0)
-    embeddings = main_model.extract(resized_image).squeeze(0).tolist()
-    # embeddings = torch.zeros(512)    
-    return Vector(embeddings) #（512）
+    return None
+    # image = Image.load_from_file(url)._pil_image
+    # if(image == None):
+    #     return torch.zeros(1, 512)
+    # transform = transforms.Compose([ 
+    #     transforms.ToTensor(),
+    #     transforms.Resize((448, 448))
+    # ]) 
+    # image = transform(image)
+    # input_image = torch.tensor(image).to(CONFIG['device'])
+    # resized_image = input_image.unsqueeze(0)
+    # embeddings = main_model.extract(resized_image).squeeze(0).tolist()
+    # # embeddings = torch.zeros(512)    
+    # return Vector(embeddings) #（512）
 # @torch.inference_mode()
 # def test_inference():
 #     model = init_model()
