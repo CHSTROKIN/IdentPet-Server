@@ -58,18 +58,25 @@ def channel():
 @app.route("/sighting", methods=["POST"])
 def sighting():
     data = request.json
+    log("sighting", "POST","Sighting begin")
     interpreted, warnings = s.sighting_spec.interpret_request(data, strict=True)
     if warnings:
+        log("sighting","POST", "Warnings found in request")
         return s.sighting_spec.response(warnings=warnings)
     
     document = SightingDocument.from_dict(interpreted, generate_timestamp=True)
+
+    log("sighting","POST", f"document is {document.to_dict()}")
+        
     document = dbi.add_sighting_image(document, data["image"])
     alerts = dbi.list_alerts()
+    log("sighting","POST", f"alerts are {alerts}")
     
     matched = matcher.match(document, alerts)
     
     pet_ids = set([m.pet_id for m in matched])
-    
+    log("sighting","POST", f"matched are {matched}")
+    log("sighting", "POST",f"pet_ids are {pet_ids}")
     if "pet_id" in interpreted and interpreted["pet_id"] not in pet_ids:
         match = dbi.get_alert(interpreted["pet_id"], create_if_not_present=False)
         if match is not None:
@@ -93,24 +100,29 @@ def valid_token(token: str):
 @app.route("/pet/found", methods=["POST"])
 def found():
     data = request.json
+    log("pet/found", "POST", f"Data is {data}")
+    
     interpreted, warnings = s.pet_found_spec.interpret_request(data, strict=True)
+    log("pet/found", "POST", f"interpreted is {interpreted}")
+    log("pet/found", "POST", f"warnings are {warnings}")
     if warnings:
         return s.pet_found_spec.response(warnings=warnings)
     
     alert = dbi.get_alert(interpreted["id"], create_if_not_present=False)
     invalid_token_warnings = []
-    if(alert != None):
-        push_tokens = [s.chat_id for s in alert.sightings if valid_token(s.chat_id)]
-        push_tokens = list(set(push_tokens))
-        
-        for token in push_tokens:
-            try:
-                send_push_message(token,
-                            "Thank you!",
-                            "You have helped someone reunite with their lost pet. Thank you for your help!",
-                            {"pet_id": interpreted["id"]})
-            except ValueError:
-                invalid_token_warnings.append(f"Invalid token: {token}")    
+    log("pet/found", "POST", f"alert is {alert}")
+    
+    push_tokens = [s.chat_id for s in alert.sightings if valid_token(s.chat_id)]
+    push_tokens = list(set(push_tokens))
+    log("pet/found", "POST", f"push_tokens are {push_tokens}")
+    for token in push_tokens:
+        try:
+            send_push_message(token,
+                        "Thank you!",
+                        "You have helped someone reunite with their lost pet. Thank you for your help!",
+                        {"pet_id": interpreted["id"]})
+        except ValueError:
+            invalid_token_warnings.append(f"Invalid token: {token}")    
     dbi.delete_alert(interpreted["id"])
     return s.pet_found_spec.response(warnings=invalid_token_warnings)
 
