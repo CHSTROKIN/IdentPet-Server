@@ -149,7 +149,7 @@ def embed_image_from_url(url: str):
     image = transform(image)
     input_image = torch.tensor(image).to(CONFIG['device'])
     resized_image = input_image.unsqueeze(0)
-    embeddings = main_model.extract(resized_image).toList()
+    embeddings = main_model.extract(resized_image).tolist()
     # embeddings = torch.zeros(1, 512)    
     return Vector(embeddings) #（1，512）
 # @torch.inference_mode()
