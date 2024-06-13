@@ -70,6 +70,7 @@ def sighting():
     log("sighting","POST", [f"document is {document.to_dict()}"])
         
     document = dbi.add_sighting_image(document, data["image"])
+    log("sighting", "POST", ["sighting image added"])
     alerts = dbi.list_alerts()
     log("sighting","POST", [f"alerts are {alerts}"])
     
