@@ -1,4 +1,5 @@
 import base64
+import datetime
 
 from flask import Flask, request, jsonify, make_response, url_for, redirect, render_template
 
@@ -28,10 +29,10 @@ matcher: SpoofMatcher = SpoofMatcher(SpoofMatch.ALWAYS, SpoofTarget.ALL)
 # matcher: SpoofMatcher = AIMatcher(5, SpoofMatch.ALWAYS, SpoofTarget.ALL)
 server_client = StreamChat(api_key="cecspa2wrfyy", api_secret="r4fq35udvu87ekgawu6t3mhx92pdq5sas24npgujxj9hp3gwzah49x5gc86bqqkx")
 
-logs: list[tuple[str, str, str]] = []
+logs: list[tuple[str, str, str, str]] = []
 def log(endpoint, method, messages):
     for message in messages:
-        logs.append((endpoint, method, message))
+        logs.append((str(datetime.datetime.now(tz=datetime.UTC)), endpoint, method, message))
 
 s.Specification.log_func = log
 @app.route("/", methods=["GET"])
@@ -84,7 +85,6 @@ def sighting():
     log("sighting","POST", [f"matched are {matched}"])
     for match in matched:
         dbi.add_sighting(match, document)
-        dbi.set_alert(match)
         log("sighting","POST", [f"match is {match}"])
         log("sighting","POST", [f"match.push_token is {match.push_token}"])
         if match.push_token is not None:

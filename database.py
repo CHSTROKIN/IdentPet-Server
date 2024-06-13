@@ -254,10 +254,12 @@ class DBInterface:
     
     def add_sighting(self, document: AlertDocument, sighting: SightingDocument) -> AlertDocument:
         document.sightings.append(sighting)
+        self.client.collection("alerts").document(document.pet_id).set({
+            "sightings": firestore.ArrayUnion([sighting.to_dict()])
+        }, merge=True)
         return document
     
     def delete_alert(self, pet_id: PetID):
-        
         self.client.collection('alerts').document(pet_id).delete()
     
     def delete_pet_images(self, pet_id: PetID):

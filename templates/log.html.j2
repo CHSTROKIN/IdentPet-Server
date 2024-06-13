@@ -9,9 +9,9 @@
         <p>Logs generated in response to requests.</p>
         <h2>Specification Warnings</h2>
         <dl>
-            {% for endpoint, method, warning in logs %}
-                <dt>{{ method }} {{ endpoint }}</dt>
-                <dd>{{ warning }}</dd>
+            {% for timestamp, endpoint, method, warning in logs %}
+                <dt>At {{ timestamp }}: {{ method }} {{ endpoint }}</dt>
+                <dd>{{ warning|safe }}</dd>
             {% endfor %}
         </dl>
     </body>
