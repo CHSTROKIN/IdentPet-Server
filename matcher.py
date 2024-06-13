@@ -77,7 +77,7 @@ class AIMatcher(SpoofMatcher):
         y1 = b.to_dict()["location_long"]
         return math.sqrt((x1-x)**2 + (y1-y)**2)
     def vecToTensor(self, vec):
-        return torch.tensor(vec._value)
+        return torch.tensor(vec._value).unsqueeze(0) #(1, 512)
     def match(self, sighting: SightingDocument, alerts: list[AlertDocument]) -> list[AlertDocument]:
         topK = self.nearestK
         if(len(alerts) <= self.nearestK):
@@ -89,5 +89,5 @@ class AIMatcher(SpoofMatcher):
         similarity_alerts.sort(key=lambda x: x[1], reverse=True)
         
         return [alert for alert, similarity in similarity_alerts[:topK]]
-if __name__ == '__main__':
-    pass
+# if __name__ == '__main__':
+#     pass

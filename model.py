@@ -8,13 +8,13 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import timm
-from vertexai.vision_models import Image
-# from PIL import Image 
+# from vertexai.vision_models import Image
+from PIL import Image 
 import math
 import torchvision.transforms as transforms
 import time 
 import cv2 
-
+import typing
 PATH = "Loss6.0087_epoch10.bin"
 CONFIG = {"seed": 2022,
           "epochs": 4,
@@ -149,9 +149,9 @@ def embed_image_from_url(url: str):
     image = transform(image)
     input_image = torch.tensor(image).to(CONFIG['device'])
     resized_image = input_image.unsqueeze(0)
-    embeddings = main_model.extract(resized_image).tolist()
-    # embeddings = torch.zeros(1, 512)    
-    return Vector(embeddings) #（1，512）
+    embeddings = main_model.extract(resized_image).squeeze(0).tolist()
+    # embeddings = torch.zeros(512)    
+    return Vector(embeddings) #（512）
 # @torch.inference_mode()
 # def test_inference():
 #     model = init_model()
@@ -163,7 +163,8 @@ def embed_image_from_url(url: str):
 #     input_image = transform(input_image)
 #     # print(input_image.shape)
 #     resized_image = input_image.unsqueeze(0)
-    return model.extract(resized_image)
+
+    return model.extract(resized_image).squeeze(0)
 # if __name__ =='__main__':
 #     print(test_inference().shape)
 #     print('Model is loaded successfully')

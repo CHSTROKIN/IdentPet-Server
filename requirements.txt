@@ -67,3 +67,4 @@ gunicorn
 exponent_server_sdk==2.1.0
 stream-chat==4.17.0
 google-cloud-aiplatform==1.54.1
+typing==3.10.0.0
