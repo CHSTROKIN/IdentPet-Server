@@ -212,8 +212,6 @@ class DBInterface:
         return None
     
     def set_alert(self, document: AlertDocument):
-        # index.add(document.pet_id, document.embedding)
-        # tensor_alertMap[document.embedding] = document
         self.client.collection('alerts').document(document.pet_id).set(document.to_dict())
     
     
@@ -261,17 +259,6 @@ class DBInterface:
         return document
     
     def delete_alert(self, pet_id: PetID):
-        # num_vec = index.ntotal
-        # all_vec = []
-        # pet_embedding = self.client.collection('alerts').document(pet_id).get().to_dict()['embedding']
-        # for i in range(num_vec):
-        #     vec = index.reconstruct(i)
-        #     if(vec != pet_embedding):
-        #         all_vec.append(index.reconstruct(i))
-        # index.reset()
-        # for vec in all_vec:
-        #     index.add(vec)
-        # tensor_alertMap.pop(pet_embedding)
         self.client.collection('alerts').document(pet_id).delete()
     
     def delete_pet_images(self, pet_id: PetID):

@@ -98,19 +98,19 @@ def found():
         return s.pet_found_spec.response(warnings=warnings)
     
     alert = dbi.get_alert(interpreted["id"], create_if_not_present=False)
-    push_tokens = [s.chat_id for s in alert.sightings if valid_token(s.chat_id)]
-    push_tokens = list(set(push_tokens))
-    
     invalid_token_warnings = []
-    for token in push_tokens:
-        try:
-            send_push_message(token,
-                          "Thank you!",
-                          "You have helped someone reunite with their lost pet. Thank you for your help!",
-                          {"pet_id": interpreted["id"]})
-        except ValueError:
-            invalid_token_warnings.append(f"Invalid token: {token}")
+    if(alert != None):
+        push_tokens = [s.chat_id for s in alert.sightings if valid_token(s.chat_id)]
+        push_tokens = list(set(push_tokens))
         
+        for token in push_tokens:
+            try:
+                send_push_message(token,
+                            "Thank you!",
+                            "You have helped someone reunite with their lost pet. Thank you for your help!",
+                            {"pet_id": interpreted["id"]})
+            except ValueError:
+                invalid_token_warnings.append(f"Invalid token: {token}")    
     dbi.delete_alert(interpreted["id"])
     return s.pet_found_spec.response(warnings=invalid_token_warnings)
 
