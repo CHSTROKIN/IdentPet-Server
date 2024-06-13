@@ -3,6 +3,7 @@ from enum import Enum
 from typing import Protocol
 from database import SightingDocument, AlertDocument
 import math 
+from locations import haversine
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -75,7 +76,7 @@ class AIMatcher(SpoofMatcher):
         y = a.to_dict()["location_long"]
         x1 = b.to_dict()["location_lat"]
         y1 = b.to_dict()["location_long"]
-        return math.sqrt((x1-x)**2 + (y1-y)**2)
+        return haversine(y, x, y1, x1)
     def vecToTensor(self, vec):
         return torch.tensor(vec._value).unsqueeze(0) #(1, 512)
     def match(self, sighting: SightingDocument, alerts: list[AlertDocument]) -> list[AlertDocument]:

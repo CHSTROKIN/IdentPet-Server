@@ -12,9 +12,7 @@ from google.cloud.firestore_v1.vector import Vector # type: ignore
 PetID: TypeAlias = str
 CloudFilePath: TypeAlias = str
 ImageURL: TypeAlias = str
-# tensor_alertMap = {}
-from model import CONFIG
-DIMENSION = CONFIG["embedding_size"]
+
 # Not actually associated with a database collection.
 class SightingDocument:
     def __init__(self, match_with: list[PetID],
@@ -259,6 +257,7 @@ class DBInterface:
         return document
     
     def delete_alert(self, pet_id: PetID):
+        
         self.client.collection('alerts').document(pet_id).delete()
     
     def delete_pet_images(self, pet_id: PetID):
