@@ -1,6 +1,6 @@
 import vertexai # type: ignore
 # from vertexai.vision_models import Image, MultiModalEmbeddingModel # type: ignore
-# from google.cloud.firestore_v1.vector import Vector # type: ignore
+from google.cloud.firestore_v1.vector import Vector # type: ignore
 
 vertexai.init(project="petfinder-424117")
 # model = MultiModalEmbeddingModel.from_pretrained("multimodalembedding")
@@ -149,9 +149,9 @@ def embed_image_from_url(url: str):
     image = transform(image)
     input_image = torch.tensor(image).to(CONFIG['device'])
     resized_image = input_image.unsqueeze(0)
-    embeddings = main_model.extract(resized_image)   
+    embeddings = main_model.extract(resized_image).toList()
     # embeddings = torch.zeros(1, 512)    
-    return (embeddings)
+    return Vector(embeddings) #（1，512）
 # @torch.inference_mode()
 # def test_inference():
 #     model = init_model()
