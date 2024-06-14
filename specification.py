@@ -112,6 +112,7 @@ sighting_spec = Specification(
         "health": str,
         "image": str,
         "id": str,
+        "pushToken": str,
         "chatID": str,
         "contactinfo": str,
         "message": str,
@@ -119,7 +120,8 @@ sighting_spec = Specification(
     database_map={
         "specificLocation": "location_desc",
         "id": "pet_id",
-        "chatID": "chat_id"
+        "chatID": "chat_id",
+        "pushToken": "push_token"
     },
     response_fields={
         "matchN": int
@@ -127,7 +129,8 @@ sighting_spec = Specification(
     annotations={
         "image": f"Should be a cloud image path obtained from a call to {upload_image_spec.endpoint}.",
         "matchN": "The number of alerts matched by the sighting.",
-        "chatID": "If set, indicates that the user is willing to be contacted about the sighting."
+        "chatID": "If set, indicates that the user is willing to be contacted about the sighting.",
+        "pushToken": "An Expo push token."
     }
 )
 

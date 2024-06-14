@@ -24,6 +24,7 @@ class SightingDocument:
         image_url:     ImageURL | None = None,
         message:       str | None = None,
         chat_id:       str   | None = None,
+        push_token:    str   | None = None,
         contactinfo:   str | None = None,
         timestamp:     datetime.datetime | None = None,
         embedding:     Vector | None = None):
@@ -45,6 +46,7 @@ class SightingDocument:
         self.message = message
         self.contactinfo = contactinfo
         self.embedding = embedding
+        self.push_token = push_token
     
     @staticmethod
     def from_dict(data, generate_timestamp=False):
@@ -66,7 +68,8 @@ class SightingDocument:
             contactinfo=data.get('contactinfo'),
             timestamp=data.get('timestamp',
                                datetime.datetime.now(tz=datetime.timezone.utc) if generate_timestamp else None),
-            embedding=data.get('embedding')
+            embedding=data.get('embedding'),
+            push_token=data.get('push_token')
         ) # Timestamp is rather hacky, but should work.
     def to_dict(self, stringify_timestamp=False):
         return {
@@ -86,7 +89,8 @@ class SightingDocument:
             'message': self.message,
             'timestamp': str(self.timestamp) if stringify_timestamp else self.timestamp,
             'contactinfo': self.contactinfo,
-            'embedding': self.embedding
+            'embedding': self.embedding,
+            'push_token': self.push_token
         }
 
 # Associated with the 'alerts' collection.

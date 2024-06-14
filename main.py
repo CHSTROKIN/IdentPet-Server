@@ -118,7 +118,7 @@ def found():
     invalid_token_warnings = []
     log("pet/found", "POST", [f"alert is {alert}"])
     
-    push_tokens = [s.chat_id for s in alert.sightings if valid_token(s.chat_id)]
+    push_tokens = [s.push_token for s in alert.sightings if valid_token(s.push_token)]
     push_tokens = list(set(push_tokens))
     log("pet/found", "POST", [f"push_tokens are {push_tokens}"])
     for token in push_tokens:
