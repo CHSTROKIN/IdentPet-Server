@@ -11,7 +11,7 @@
         <dl>
             {% for timestamp, endpoint, method, warning in logs %}
                 <dt>At {{ timestamp }}: {{ method }} {{ endpoint }}</dt>
-                <dd>{{ warning|safe }}</dd>
+                <dd>{{ warning|e }}</dd>
             {% endfor %}
         </dl>
     </body>
