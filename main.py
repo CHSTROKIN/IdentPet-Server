@@ -101,6 +101,8 @@ def sighting():
     })
     
 def valid_token(token: str):
+    if token is None:
+        return False
     return token.startswith("ExponentPushToken[") and token.endswith("]")
 
 @app.route("/pet/found", methods=["POST"])
