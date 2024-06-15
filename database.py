@@ -7,7 +7,7 @@ from typing import TypeAlias
 import datetime
 
 from model import embed_image_from_url
-from google.cloud.firestore_v1.vector import Vector # type: ignore
+# from google.cloud.firestore_v1.vector import Vector # type: ignore
 
 PetID: TypeAlias = str
 CloudFilePath: TypeAlias = str
@@ -27,7 +27,7 @@ class SightingDocument:
         push_token:    str   | None = None,
         contactinfo:   str | None = None,
         timestamp:     datetime.datetime | None = None,
-        embedding:     Vector | None = None):
+        embedding:     str | None = None):
         
         self.location_lat = location_lat
         self.location_long = location_long
@@ -162,7 +162,7 @@ class AlertDocument:
 # Associated with the 'pets' collection.
 class PetImagesDocument:
     def __init__(self, pet_id: str, images: list[CloudFilePath], image_urls: list[ImageURL],
-                 embedding: Vector | None = None):
+                 embedding: str | None = None):
         self.pet_id = pet_id
         self.images = images
         self.image_urls = image_urls
