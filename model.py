@@ -165,7 +165,7 @@ def embed_image_from_url(url: str):
 #     # print(input_image.shape)
 #     resized_image = input_image.unsqueeze(0)
 
-    return model.extract(resized_image).squeeze(0)
+    # return model.extract(resized_image).squeeze(0)
 # if __name__ =='__main__':
 #     print(test_inference().shape)
 #     print('Model is loaded successfully')
