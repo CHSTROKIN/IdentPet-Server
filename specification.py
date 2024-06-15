@@ -227,6 +227,17 @@ pet_unsight_spec = Specification(
     }
 )
 
+block_spec = Specification(
+    "Block User",
+    "/block",
+    "Blocks a user from contacting another users.",
+    method="POST",
+    required_fields={
+        "blocker_id": str,
+        "blockee_id": str
+    }
+)
+
 get_specifications_by_endpoint = {
     "pet/alert": pet_alert_spec_get
 }
