@@ -137,7 +137,7 @@ def init_model():
     model.eval()
     return model
 main_model = init_model()
-@torch.inference_mode()
+
 def embed_image_from_url(url: str):
     return  "hello"
     # image = Image.load_from_file(url)._pil_image
