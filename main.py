@@ -99,6 +99,17 @@ def valid_token(token: str):
         return False
     return token.startswith("ExponentPushToken[") and token.endswith("]")
 
+@app.route("/pet/unsight", methods=["POST"])
+def unsight():
+    data = request.json
+    interpreted, warnings = s.pet_unsight_spec.interpret_request(data, strict=True)
+    if warnings:
+        return s.pet_unsight_spec.response(warnings=warnings)
+    
+    alert = dbi.get_alert(interpreted["id"], create_if_not_present=False)
+    dbi.remove_sighting(alert, int(interpreted["sighting_index"]))
+    return s.pet_unsight_spec.response()
+
 @app.route("/pet/found", methods=["POST"])
 def found():
     data = request.json

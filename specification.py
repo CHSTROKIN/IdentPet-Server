@@ -216,14 +216,14 @@ pet_nearby_spec_get = Specification(
     }
 )
 
-channel_spec = Specification(
-    "Create a New Channel",
-    "/channel",
-    "Creates a new channel between the two provided chatIDs.",
+pet_unsight_spec = Specification(
+    "Report Sighting as a Non-Match",
+    "/pet/unsight",
+    "Reports a sighting as not matching this alert.",
     method="POST",
     required_fields={
-        "chatID1": str,
-        "chatID2": str
+        "id": str,
+        "sighting_index": permissiveInt
     }
 )
 

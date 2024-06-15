@@ -262,6 +262,13 @@ class DBInterface:
             "sightings": firestore.ArrayUnion([sighting.to_dict()])
         }, merge=True)
         return document
+
+    def remove_sighting(self, document: AlertDocument, sighting_index: int) -> AlertDocument:
+        sighting = document.sightings.pop(sighting_index)
+        self.client.collection("alerts").document(document.pet_id).set({
+            "sightings": firestore.ArrayRemove([sighting.to_dict()])
+        }, merge=True)
+        return document
     
     def delete_alert(self, pet_id: PetID):
         self.client.collection('alerts').document(pet_id).delete()
