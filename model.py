@@ -14,6 +14,7 @@ import math
 import torchvision.transforms as transforms
 import time 
 import cv2 
+import numpy as np
 import typing
 PATH = "Loss6.0087_epoch10.bin"
 CONFIG = {"seed": 2022,
@@ -137,22 +138,21 @@ def init_model():
     model.eval()
     return model
 main_model = init_model()
-
+def tensor_to_str(a):
+    return a.numpy().tostring()
 def embed_image_from_url(url: str):
-    return  "hello"
-    # image = Image.load_from_file(url)._pil_image
-    # if(image == None):
-    #     return torch.zeros(1, 512)
-    # transform = transforms.Compose([ 
-    #     transforms.ToTensor(),
-    #     transforms.Resize((448, 448))
-    # ]) 
-    # image = transform(image)
-    # input_image = torch.tensor(image).to(CONFIG['device'])
-    # resized_image = input_image.unsqueeze(0)
-    # embeddings = main_model.extract(resized_image).squeeze(0).tolist()
-    # # embeddings = torch.zeros(512)    
-    # return Vector(embeddings) #（512）
+    image = Image.load_from_file(url)._pil_image
+    if(image == None):
+        return torch.zeros(1, 512)
+    transform = transforms.Compose([ 
+        transforms.ToTensor(),
+        transforms.Resize((448, 448))
+    ]) 
+    image = transform(image)
+    input_image = torch.tensor(image).to(CONFIG['device'])
+    resized_image = input_image.unsqueeze(0)
+    embeddings = main_model.extract(resized_image).squeeze(0).to(torch.float32)
+    return tensor_to_str(embeddings)#（512）
 # @torch.inference_mode()
 # def test_inference():
 #     model = init_model()
@@ -165,7 +165,25 @@ def embed_image_from_url(url: str):
 #     # print(input_image.shape)
 #     resized_image = input_image.unsqueeze(0)
 
-    # return model.extract(resized_image).squeeze(0)
+#     return model.extract(resized_image).squeeze(0).numpy().tostring()
 # if __name__ =='__main__':
-#     print(test_inference().shape)
+#     print(test_inference())
 #     print('Model is loaded successfully')
+
+# import torch
+
+# Create a tensor
+# tensor = torch.tensor([[1.0, 2.0], [3.0, 4.0]])
+
+# Convert tensor to string
+# tensor_str = tensor.numpy().tostring()
+# print("Tensor to string:", tensor_str)
+
+# import numpy as np
+
+# Convert string back to numpy array
+# tensor_back_np = np.fromstring(tensor_str, dtype=np.float32).reshape(2, 2)
+
+#  Convert numpy array back to tensor
+# tensor_back = torch.from_numpy(tensor_back_np)
+# print("String back to tensor:", tensor_back)

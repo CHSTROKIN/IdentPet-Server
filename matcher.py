@@ -8,7 +8,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import time 
-
+import numpy as np
 class SpoofMatch(Enum):
     NEVER = 0
     HALF = 1
@@ -77,8 +77,10 @@ class AIMatcher(SpoofMatcher):
         x1 = b.to_dict()["location_lat"]
         y1 = b.to_dict()["location_long"]
         return haversine(y, x, y1, x1)
-    def vecToTensor(self, vec):
-        return torch.tensor(vec._value).unsqueeze(0) #(1, 512)
+    
+    def vecToTensor(self, vec:str):
+        np_vec = np.fromstring(vec, dtype=np.float32).reshape(DIMENSION)
+        return torch.tensor(np_vec).unsqueeze(0) #(1, 512)
     def match(self, sighting: SightingDocument, alerts: list[AlertDocument]) -> list[AlertDocument]:
         topK = self.nearestK
         if(len(alerts) <= self.nearestK):
