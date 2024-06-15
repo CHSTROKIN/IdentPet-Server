@@ -9,6 +9,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 import time 
 import numpy as np
+import base64
 class SpoofMatch(Enum):
     NEVER = 0
     HALF = 1
@@ -78,9 +79,11 @@ class AIMatcher(SpoofMatcher):
         y1 = b.to_dict()["location_long"]
         return haversine(y, x, y1, x1)
     
-    def vecToTensor(self, vec:str):
-        np_vec = np.fromstring(vec, dtype=np.float32).reshape(DIMENSION)
-        return torch.tensor(np_vec).unsqueeze(0) #(1, 512)
+    def vecToTensor(self, vec:bytes):
+        np_vec = np.fromstring(base64.decode(vec), dtype=np.float32).reshape(DIMENSION)
+        return self.normalize(torch.tensor(np_vec)).unsqueeze(0) #(1, 512)
+    def normalize(self, vec: torch.Tensor):
+        return vec / torch.norm(vec, p=2)
     def match(self, sighting: SightingDocument, alerts: list[AlertDocument]) -> list[AlertDocument]:
         topK = self.nearestK
         if(len(alerts) <= self.nearestK):
