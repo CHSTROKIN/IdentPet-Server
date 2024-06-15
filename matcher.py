@@ -79,8 +79,8 @@ class AIMatcher(SpoofMatcher):
         y1 = b.to_dict()["location_long"]
         return haversine(y, x, y1, x1)
     
-    def vecToTensor(self, vec:bytes):
-        np_vec = np.fromstring(base64.decode(vec), dtype=np.float32).reshape(DIMENSION)
+    def vecToTensor(self, vec:str):
+        np_vec = np.fromstring(base64.b64decode(vec), dtype=np.float32).reshape(DIMENSION)
         return self.normalize(torch.tensor(np_vec)).unsqueeze(0) #(1, 512)
     def normalize(self, vec: torch.Tensor):
         return vec / torch.norm(vec, p=2)

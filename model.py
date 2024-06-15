@@ -9,8 +9,8 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import timm
-from vertexai.vision_models import Image
-# from PIL import Image 
+# from vertexai.vision_models import Image
+from PIL import Image 
 import math
 import torchvision.transforms as transforms
 import time 
@@ -153,7 +153,7 @@ def embed_image_from_url(url: str):
     input_image = torch.tensor(image).to(CONFIG['device'])
     resized_image = input_image.unsqueeze(0)
     embeddings = main_model.extract(resized_image).squeeze(0).to(torch.float32)
-    return base64.encode(embeddings.detach().numpy().tostring())#（512）
+    return base64.b64encode(embeddings.detach().numpy().tostring()).decode('utf-8')#（512）
 # @torch.inference_mode()
 # def test_inference():
 #     model = init_model()
@@ -166,10 +166,10 @@ def embed_image_from_url(url: str):
 #     # print(input_image.shape)
 #     resized_image = input_image.unsqueeze(0)
 
-#     return model.extract(resized_image).squeeze(0).numpy().tostring()
-# if __name__ =='__main__':
-#     print(test_inference())
-#     print('Model is loaded successfully')
+#     return base64.b64encode(model.extract(resized_image).squeeze(0).numpy().tostring())
+if __name__ =='__main__':
+    print(test_inference())
+    print('Model is loaded successfully')
 
 # import torch
 
