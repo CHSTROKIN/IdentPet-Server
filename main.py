@@ -45,16 +45,10 @@ def image():
     fname = dbi.upload_image(data)
     return make_response(jsonify({"id": fname}), 200)
 
-@app.route("/channel", methods=["POST"])
-def channel():
-    data = request.json
-    interpreted, warnings = s.channel_spec.interpret_request(data, strict=True)
-    if warnings:
-        return s.channel_spec.response(warnings=warnings)
-    server_client.channel("messaging", {
-        "members": [interpreted["chatID1"], interpreted["chatID2"]],
-    }).create()
-    return s.channel_spec.response()
+@app.route("/channel/<channel_id>", methods=["DELETE"])
+def channel(channel_id):
+    server_client.delete_channels([channel_id])
+    return make_response(jsonify({}), 200)
 
 @app.route("/sighting", methods=["POST"])
 def sighting():
