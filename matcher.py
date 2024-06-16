@@ -82,7 +82,8 @@ class AIMatcher(SpoofMatcher):
         self.nearestK = nearestK
         self.match_mode: SpoofMatch = match_mode
         self.target_mode: SpoofTarget = target_mode
-        self.cos = nn.CosineSimilarity(dim = 1, eps=1e-6)
+        # self.cos = nn.CosineSimilarity(dim = 1, eps=1e-6)
+        self.cos = nn.PairwiseDistance(p=2)
         self.disFactor = 0.03
         
     def distance(self, a: SightingDocument, b:AlertDocument) -> float:
