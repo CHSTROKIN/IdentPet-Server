@@ -19,12 +19,17 @@ class SpoofMatch(Enum):
     ALTERNATING = 2
     ALWAYS = 3
     AI = 4
+    
 class SpoofTarget(Enum):
     FIRST = 0
     ONE = 1
     RANDOM = 2
     ALL = 3
     AI = 4
+    
+def format_weighted_alert(pair: tuple[AlertDocument, torch.Tensor]):
+    alert, weight = pair
+    return f"{alert.name} (Weight: {weight})"
     
 DIMENSION = 512
 
@@ -115,9 +120,10 @@ class AIMatcher(SpoofMatcher):
              similarity * (self.disFactor)/(self.distance(sighting, alert) + self.EPSILON))
             for alert, similarity in similarity_alerts]
         
-        log("AI Matcher","(function)",[f"Top {topK} alerts: {similarity_alerts[:topK]}"])
+        # log("AI Matcher","(function)",[f"Top {topK} alerts: {similarity_alerts[:topK]}"])
         similarity_alerts.sort(key=lambda x: x[1], reverse=True)
-        log("AI Matcher","(function)",[f"Top {topK} alerts: {similarity_alerts[:topK]}"])
+        # log("AI Matcher","(function)",[f"Top {topK} alerts: {similarity_alerts[:topK]}"])
+        log("AI Matcher", "(function)", map(format_weighted_alert, similarity_alerts))
         
         return [alert for alert, similarity in similarity_alerts[:topK]]
 if __name__ == '__main__':

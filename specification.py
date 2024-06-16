@@ -166,6 +166,9 @@ pet_alert_spec_post = Specification(
         "push_token": str,
         "size": str
     },
+    response_fields={
+        "pet_id": str
+    }
 )
 
 pet_alert_spec_get = Specification(
