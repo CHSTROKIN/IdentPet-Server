@@ -115,10 +115,10 @@ class AIMatcher(SpoofMatcher):
             )) for alert in alerts
         ]
         
-        similarity_alerts = [
-            (alert,
-             similarity * (self.disFactor)/(self.distance(sighting, alert) + self.EPSILON))
-            for alert, similarity in similarity_alerts]
+        # similarity_alerts = [
+        #     (alert,
+        #      similarity * (self.disFactor)/(self.distance(sighting, alert) + self.EPSILON))
+        #     for alert, similarity in similarity_alerts]
         
         # log("AI Matcher","(function)",[f"Top {topK} alerts: {similarity_alerts[:topK]}"])
         similarity_alerts.sort(key=lambda x: x[1], reverse=True)
