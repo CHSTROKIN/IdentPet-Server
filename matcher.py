@@ -65,7 +65,7 @@ class SpoofMatcher:
         return targets
 
 class AIMatcher(SpoofMatcher):
-    def __init__(self, nearestK: int = 5, match_mode: SpoofMatch = SpoofMatch.AI, target_mode: SpoofTarget = SpoofTarget.AI):
+    def __init__(self, nearestK: int = 1, match_mode: SpoofMatch = SpoofMatch.AI, target_mode: SpoofTarget = SpoofTarget.AI):
         super().__init__(match_mode, target_mode)
         self.nearestK = nearestK
         self.match_mode: SpoofMatch = match_mode
@@ -86,14 +86,11 @@ class AIMatcher(SpoofMatcher):
         return vec / torch.norm(vec, p=2)
     def match(self, sighting: SightingDocument, alerts: list[AlertDocument]) -> list[AlertDocument]:
         topK = self.nearestK
-        if(len(alerts) <= self.nearestK):
-            topK = 1
         if(len(alerts) == 0):
             return []
         similarity_alerts = [(alert, self.cos(self.vecToTensor(alert.to_dict()["embedding"]), self.vecToTensor(sighting.to_dict()["embedding"]))) for alert in alerts]
         similarity_alerts = [(alert, similarity * (self.disFactor)/(self.distance(sighting, alert))) for alert, similarity in similarity_alerts]
         similarity_alerts.sort(key=lambda x: x[1], reverse=True)
-        
         return [alert for alert, similarity in similarity_alerts[:topK]]
 if __name__ == '__main__':
     pass
