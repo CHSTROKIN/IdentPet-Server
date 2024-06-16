@@ -90,11 +90,15 @@ class AIMatcher(SpoofMatcher):
     def vecToTensor(self, vec:str):
         np_vec = np.fromstring(base64.b64decode(vec), dtype=np.float32).reshape(DIMENSION)
         return self.normalize(torch.tensor(np_vec)).unsqueeze(0) #(1, 512)
+    
     def normalize(self, vec: torch.Tensor):
         return vec / torch.norm(vec, p=2)
+    
     def match(self, sighting: SightingDocument, alerts: list[AlertDocument]) -> list[AlertDocument]:
+        log("AI Matcher", "(function)", ["AI matcher has been called!"])
         topK = 1
         if(len(alerts) == 0):
+            log("AI Matcher", "(function)", ["No alerts to match - exiting!"])
             return []
         similarity_alerts = [(alert, self.cos(self.vecToTensor(alert.to_dict()["embedding"]), self.vecToTensor(sighting.to_dict()["embedding"]))) for alert in alerts]
         similarity_alerts = [(alert, similarity * (self.disFactor)/(self.distance(sighting, alert))) for alert, similarity in similarity_alerts]

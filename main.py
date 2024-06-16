@@ -84,7 +84,7 @@ def sighting():
         # log("sighting","POST", [f"match.push_token is {match.push_token}"])
         if match.push_token is not None:
             send_push_message(match.push_token, "Sighting Alert",
-                              "Your pet has been sighted! Check the app for more details.",
+                              f"Your pet {match.name} may have been sighted! Check the app for more details.",
                               {"pet_id": match.pet_id})
     
     
@@ -274,6 +274,7 @@ def pet_images():
 @app.route("/debug", methods=["GET"])
 def debug():
     return render_template("debug.html.j2",
+                           matcher=matcher.__class__.__name__,
                            mode=matcher.match_mode.name,
                            target=matcher.target_mode.name)
 
