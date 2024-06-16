@@ -10,13 +10,13 @@ import torch.nn as nn
 import torch.nn.functional as F
 import timm
 from vertexai.vision_models import Image
-# from PIL import Image 
+# from PIL import Image as PILImage
 import math
 import torchvision.transforms as transforms
 import time 
 import cv2 
 import numpy as np
-import albumentations as A
+
 import typing
 PATH = "Loss1.9962_epoch7.bin"
 CONFIG = {"seed": 2022,
@@ -146,16 +146,14 @@ def embed_image_from_url(url: str):
     image = Image.load_from_file(url)._pil_image
     if(image == None):
         return torch.zeros(1, 512)
-    transform = transforms.Compose([ 
-        transforms.ToTensor(),
+    transform = transforms.Compose([
         transforms.Resize((448, 448)),
-        A.Normalize(
-                mean=[0.485, 0.456, 0.406], 
-                std=[0.229, 0.224, 0.225], 
-                max_pixel_value=255.0, 
-                p=1.0
+        transforms.ToTensor(),
+        transforms.Normalize(
+            mean=[0.485, 0.456, 0.406],
+            std=[0.229, 0.224, 0.225]
         )
-    ]) 
+    ])
     image = transform(image)
     input_image = torch.tensor(image).to(CONFIG['device'])
     resized_image = input_image.unsqueeze(0)
@@ -164,17 +162,24 @@ def embed_image_from_url(url: str):
 # @torch.inference_mode()
 # def test_inference():
 #     model = init_model()
-#     input_image = Image.open('t1.jpg')
-#     transform = transforms.Compose([ 
+#     image = PILImage.open('t1.jpg')
+#     transform = transforms.Compose([
+#         transforms.Resize((448, 448)),
 #         transforms.ToTensor(),
-#         transforms.Resize((448, 448))
-#     ]) 
-#     input_image = transform(input_image)
-#     # print(input_image.shape)
+#         transforms.Normalize(
+#             mean=[0.485, 0.456, 0.406],
+#             std=[0.229, 0.224, 0.225]
+#         )
+#     ])
+#     image = transform(image)
+#     input_image = torch.tensor(image).to(CONFIG['device'])
 #     resized_image = input_image.unsqueeze(0)
+#     embeddings = main_model.extract(resized_image).squeeze(0).to(torch.float32)
+#     return base64.b64encode(embeddings.detach().numpy().tostring()).decode('utf-8')#（512）
 
-#     return base64.b64encode(model.extract(resized_image).squeeze(0).numpy().tostring())
+# #     return base64.b64encode(model.extract(resized_image).squeeze(0).numpy().tostring())
 # if __name__ =='__main__':
+#     print(test_inference())
 #     print('Model is loaded successfully')
 
 # import torch
