@@ -165,9 +165,6 @@ pet_alert_spec_post = Specification(
         "name": str,
         "push_token": str,
         "size": str
-    },
-    response_fields={
-        "pet_id": str
     }
 )
 
@@ -192,7 +189,8 @@ pet_alert_spec_get = Specification(
         "timestamp": str,
         "size": str,
         "contactinfo": str,
-        "message": str
+        "message": str,
+        "pet_id": str
     },
     database_map={
         "id": "pet_id"
