@@ -262,6 +262,12 @@ class DBInterface:
             "sightings": firestore.ArrayUnion([sighting.to_dict()])
         }, merge=True)
         return document
+    
+    def get_alert_embedding(self, document: AlertDocument) -> str | None:
+        images_doc = self.get_pet_images(document.pet_id)
+        if not images_doc:
+            return None
+        return images_doc.embedding
 
     def remove_sighting(self, document: AlertDocument, sighting_index: int) -> AlertDocument:
         document.sightings.pop(sighting_index)

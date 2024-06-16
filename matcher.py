@@ -1,7 +1,7 @@
 import random
 from enum import Enum
 from typing import Protocol
-from database import SightingDocument, AlertDocument
+from database import DBInterface, SightingDocument, AlertDocument
 import math 
 from locations import haversine
 import torch
@@ -69,13 +69,17 @@ class SpoofMatcher:
 
 class AIMatcher(SpoofMatcher):
     log = lambda *args: None
-    def __init__(self, nearestK: int = 1, match_mode: SpoofMatch = SpoofMatch.AI, target_mode: SpoofTarget = SpoofTarget.AI):
+    EPSILON = 1e-6
+    
+    def __init__(self, dbi: DBInterface, nearestK: int = 1, match_mode: SpoofMatch = SpoofMatch.AI, target_mode: SpoofTarget = SpoofTarget.AI):
         super().__init__(match_mode, target_mode)
+        self.dbi = dbi
         self.nearestK = nearestK
         self.match_mode: SpoofMatch = match_mode
         self.target_mode: SpoofTarget = target_mode
         self.cos = nn.CosineSimilarity(dim = 1, eps=1e-6)
         self.disFactor = 0.03
+        
     def distance(self, a: SightingDocument, b:AlertDocument) -> float:
         x = a.to_dict()["location_lat"]
         y = a.to_dict()["location_long"]
@@ -92,15 +96,28 @@ class AIMatcher(SpoofMatcher):
     
     def match(self, sighting: SightingDocument, alerts: list[AlertDocument], log=lambda *args: None) -> list[AlertDocument]:
         log("AI Matcher", "(function)", ["AI matcher has been called!"])
+        
         topK = 1
         if(len(alerts) == 0):
             log("AI Matcher", "(function)", ["No alerts to match - exiting!"])
             return []
-        similarity_alerts = [(alert, self.cos(self.vecToTensor(alert.to_dict()["embedding"]), self.vecToTensor(sighting.to_dict()["embedding"]))) for alert in alerts]
-        similarity_alerts = [(alert, similarity * (self.disFactor)/(self.distance(sighting, alert))) for alert, similarity in similarity_alerts]
-        log("AI MATCHER","INNER",[f"Top {topK} alerts: {similarity_alerts[:topK]}"])
+        
+        similarity_alerts = [
+            (alert,
+             self.cos(
+                 self.vecToTensor(self.dbi.get_alert_embedding(alert) or ""),
+                 self.vecToTensor(sighting.embedding or "")
+            )) for alert in alerts
+        ]
+        
+        similarity_alerts = [
+            (alert,
+             similarity * (self.disFactor)/(self.distance(sighting, alert) + self.EPSILON))
+            for alert, similarity in similarity_alerts]
+        
+        log("AI Matcher","(function)",[f"Top {topK} alerts: {similarity_alerts[:topK]}"])
         similarity_alerts.sort(key=lambda x: x[1], reverse=True)
-        log("AI MATCHER","INNER",[f"Top {topK} alerts: {similarity_alerts[:topK]}"])
+        log("AI Matcher","(function)",[f"Top {topK} alerts: {similarity_alerts[:topK]}"])
         
         return [alert for alert, similarity in similarity_alerts[:topK]]
 if __name__ == '__main__':
