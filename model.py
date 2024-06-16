@@ -17,7 +17,7 @@ import time
 import cv2 
 import numpy as np
 import typing
-PATH = "Loss6.0087_epoch10.bin"
+PATH = "weight_changed.pkt"
 CONFIG = {"seed": 2022,
           "epochs": 4,
           "img_size": 448,
