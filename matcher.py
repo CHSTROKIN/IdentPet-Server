@@ -12,12 +12,7 @@ import numpy as np
 import base64
 import specification as s
 import datetime
-logs: list[tuple[str, str, str, str]] = []
-def log(endpoint, method, messages):
-    for message in messages:
-        logs.append((str(datetime.datetime.now(tz=datetime.UTC)), endpoint, method, message))
 
-s.Specification.log_func = log
 class SpoofMatch(Enum):
     NEVER = 0
     HALF = 1
@@ -34,7 +29,7 @@ class SpoofTarget(Enum):
 DIMENSION = 512
 
 class MatcherProtocol(Protocol):
-    def match(self, sighting: SightingDocument, alerts: list[AlertDocument]) -> list[AlertDocument]:
+    def match(self, sighting: SightingDocument, alerts: list[AlertDocument], log = lambda *args: None) -> list[AlertDocument]:
         ...
         
 class SpoofMatcher:
@@ -43,7 +38,7 @@ class SpoofMatcher:
         self.target_mode: SpoofTarget = target_mode
         self.alternation_state: bool = True
     
-    def match(self, sighting: SightingDocument, alerts: list[AlertDocument]) -> list[AlertDocument]:
+    def match(self, sighting: SightingDocument, alerts: list[AlertDocument], log = lambda *args: None) -> list[AlertDocument]:
         if self.match_mode == SpoofMatch.NEVER:
             return []
         
@@ -73,6 +68,7 @@ class SpoofMatcher:
         return targets
 
 class AIMatcher(SpoofMatcher):
+    log = lambda *args: None
     def __init__(self, nearestK: int = 1, match_mode: SpoofMatch = SpoofMatch.AI, target_mode: SpoofTarget = SpoofTarget.AI):
         super().__init__(match_mode, target_mode)
         self.nearestK = nearestK
@@ -94,7 +90,7 @@ class AIMatcher(SpoofMatcher):
     def normalize(self, vec: torch.Tensor):
         return vec / torch.norm(vec, p=2)
     
-    def match(self, sighting: SightingDocument, alerts: list[AlertDocument]) -> list[AlertDocument]:
+    def match(self, sighting: SightingDocument, alerts: list[AlertDocument], log=lambda *args: None) -> list[AlertDocument]:
         log("AI Matcher", "(function)", ["AI matcher has been called!"])
         topK = 1
         if(len(alerts) == 0):

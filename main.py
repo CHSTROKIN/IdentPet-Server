@@ -68,7 +68,7 @@ def sighting():
     alerts = dbi.list_alerts()
     # log("sighting","POST", [f"alerts are {alerts}"])
     
-    matched = matcher.match(document, alerts)
+    matched = matcher.match(document, alerts, log=log)
     
     pet_ids = set([m.pet_id for m in matched])
     # log("sighting","POST", [f"matched are {matched}"])
