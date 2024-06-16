@@ -82,8 +82,8 @@ class AIMatcher(SpoofMatcher):
         self.nearestK = nearestK
         self.match_mode: SpoofMatch = match_mode
         self.target_mode: SpoofTarget = target_mode
-        # self.cos = nn.CosineSimilarity(dim = 1, eps=1e-6)
-        self.cos = nn.PairwiseDistance(p=2)
+        self.cos = nn.CosineSimilarity(dim = 1, eps=1e-6)
+        # self.cos = nn.PairwiseDistance(p=2)
         self.disFactor = 0.03
         
     def distance(self, a: SightingDocument, b:AlertDocument) -> float:
@@ -121,9 +121,7 @@ class AIMatcher(SpoofMatcher):
         #      similarity * (self.disFactor)/(self.distance(sighting, alert) + self.EPSILON))
         #     for alert, similarity in similarity_alerts]
         
-        # log("AI Matcher","(function)",[f"Top {topK} alerts: {similarity_alerts[:topK]}"])
         similarity_alerts.sort(key=lambda x: x[1], reverse=True)
-        # log("AI Matcher","(function)",[f"Top {topK} alerts: {similarity_alerts[:topK]}"])
         log("AI Matcher", "(function)", map(format_weighted_alert, similarity_alerts))
         
         return [alert for alert, similarity in similarity_alerts[:topK]]
