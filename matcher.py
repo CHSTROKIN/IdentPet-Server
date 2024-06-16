@@ -10,7 +10,14 @@ import torch.nn.functional as F
 import time 
 import numpy as np
 import base64
-from main import log
+import specification as s
+import datetime
+logs: list[tuple[str, str, str, str]] = []
+def log(endpoint, method, messages):
+    for message in messages:
+        logs.append((str(datetime.datetime.now(tz=datetime.UTC)), endpoint, method, message))
+
+s.Specification.log_func = log
 class SpoofMatch(Enum):
     NEVER = 0
     HALF = 1
