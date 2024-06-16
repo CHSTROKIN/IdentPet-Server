@@ -18,7 +18,7 @@ import cv2
 import numpy as np
 
 import typing
-PATH = "Loss1.9962_epoch7.bin"
+PATH = "Loss1.8435_epoch7.bin"
 CONFIG = {"seed": 2022,
           "epochs": 4,
           "img_size": 448,
