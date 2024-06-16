@@ -16,8 +16,9 @@ import torchvision.transforms as transforms
 import time 
 import cv2 
 import numpy as np
+import albumentations as A
 import typing
-PATH = "weight_changed.pkt"
+PATH = "Loss1.9962_epoch7.bin"
 CONFIG = {"seed": 2022,
           "epochs": 4,
           "img_size": 448,
@@ -147,7 +148,13 @@ def embed_image_from_url(url: str):
         return torch.zeros(1, 512)
     transform = transforms.Compose([ 
         transforms.ToTensor(),
-        transforms.Resize((448, 448))
+        transforms.Resize((448, 448)),
+        A.Normalize(
+                mean=[0.485, 0.456, 0.406], 
+                std=[0.229, 0.224, 0.225], 
+                max_pixel_value=255.0, 
+                p=1.0
+        )
     ]) 
     image = transform(image)
     input_image = torch.tensor(image).to(CONFIG['device'])
@@ -168,7 +175,6 @@ def embed_image_from_url(url: str):
 
 #     return base64.b64encode(model.extract(resized_image).squeeze(0).numpy().tostring())
 # if __name__ =='__main__':
-#     print(test_inference())
 #     print('Model is loaded successfully')
 
 # import torch
