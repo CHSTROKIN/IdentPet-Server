@@ -25,7 +25,7 @@ app.config["not_found_url"] = "https://storage.googleapis.com/petfinder-424117.a
 db = firestore.Client(project="petfinder-424117")
 
 dbi = DBInterface(project="petfinder-424117", bucket_name="petfinder-424117.appspot.com")
-matcher: SpoofMatcher = SpoofMatcher(SpoofMatch.ALWAYS, SpoofTarget.ALL)
+matcher: SpoofMatcher = AIMatcher(dbi=dbi)
 server_client = StreamChat(api_key="cecspa2wrfyy", api_secret="r4fq35udvu87ekgawu6t3mhx92pdq5sas24npgujxj9hp3gwzah49x5gc86bqqkx")
 
 logs: list[tuple[str, str, str, str]] = []
